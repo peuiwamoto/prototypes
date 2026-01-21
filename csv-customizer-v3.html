@@ -13,7 +13,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand-name">
-                    <img src="https://www.figma.com/api/mcp/asset/5bb754cc-a6d8-4a7f-a9e1-781c70f1e7af" alt="Pliant" class="brand-logo">
+                    <span class="brand-logo">Pliant</span>
                 </div>
             </div>
             <nav class="sidebar-nav">
@@ -100,6 +100,7 @@
         <main class="main-content">
             <!-- Header Icons -->
             <div class="header-icons">
+                <span class="icon" id="clearStorageBtn" title="Clear saved data"><i class="ph ph-arrow-counter-clockwise"></i></span>
                 <span class="icon"><i class="ph ph-bell"></i><span class="notification-badge"></span></span>
                 <span class="icon"><i class="ph ph-question"></i></span>
                 <span class="icon"><i class="ph ph-gear"></i></span>
@@ -125,87 +126,99 @@
 
             <!-- Content Area -->
             <div class="content-area">
-                <!-- Step 0: Landing Page -->
-                <div class="step-container" id="step0">
-                    <div class="landing-page">
+                <!-- Step 0: Landing Screen -->
+                <div class="step-container active" id="step0">
+                    <div class="landing-container">
                         <div class="landing-header">
-                            <div>
-                                <h2 class="landing-title">CSV Export Configuration</h2>
-                                <p class="landing-description">
-                                    Configure column structure, field mappings, formatting and accounting logic for CSV exports. 
-                                    This configuration will replace the standard CSV export format.
-                                </p>
+                            <div class="landing-icon">
+                                <i class="ph ph-file-csv"></i>
                             </div>
-                            <div class="landing-actions">
-                                <button class="btn-secondary btn-large" id="previewConfigBtn">
-                                    <i class="ph ph-eye"></i>
-                                    Preview
-                                </button>
-                                <button class="btn-primary btn-large" id="editConfigBtn">
-                                    <i class="ph ph-pencil"></i>
+                            <h1 class="landing-title">CSV Export Configuration</h1>
+                            <p class="landing-description">Configure columns, map data fields, and set formatting options to create accounting-ready exports tailored to your needs.</p>
+                        </div>
+
+                        <!-- Configuration Card (shown after saving) -->
+                        <div id="configCard" class="config-card" style="display: none;">
+                            <div class="config-card-header">
+                                <div class="config-card-title-section">
+                                    <h3 class="config-card-title">Current Export Configuration</h3>
+                                    <p class="config-card-meta" id="configCardMeta"></p>
+                                </div>
+                                <button class="btn-primary" id="editConfigBtn">
+                                    <i class="ph ph-pencil-simple"></i>
                                     Edit Configuration
                                 </button>
                             </div>
+                            <div class="config-card-body">
+                                <div class="config-card-summary" id="configCardSummary"></div>
+                            </div>
                         </div>
-                        
-                        <!-- Configuration Info Card -->
-                        <div class="config-info-card" id="configInfoCard">
-                            <!-- Will be populated dynamically -->
+
+                        <!-- Empty State (shown when no configuration) -->
+                        <div id="emptyState" class="empty-state">
+                            <button class="btn-primary btn-large" id="createConfigBtn">
+                                <i class="ph ph-plus"></i>
+                                Create New Export Configuration
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 1: Configuration Screen -->
-                <div class="step-container" id="step1" style="display: none;">
+                <div class="step-container" id="step1">
+                    <div class="config-header">
+                        <div class="config-title-section">
+                            <div>
+                                <h2 class="config-title">CSV Export Configuration</h2>
+                                <div class="config-meta" id="configMeta">
+                                    <span class="meta-item">Last updated by: <strong>John Doe</strong></span>
+                                    <span class="meta-separator">•</span>
+                                    <span class="meta-item">Last updated at: <strong id="lastUpdatedAt">—</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="config-actions">
+                            <button class="btn-secondary" id="previewBtn">
+                                <i class="ph ph-eye"></i>
+                                Preview
+                            </button>
+                            <button class="btn-secondary" id="cancelBtn" style="display: none;">
+                                <i class="ph ph-x"></i>
+                                Cancel
+                            </button>
+                            <button class="btn-primary" id="saveConfigBtn" disabled>
+                                <i class="ph ph-floppy-disk"></i>
+                                Save configuration
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Global Settings -->
+                    <div class="global-settings-section">
+                        <div class="global-setting-item">
+                            <label class="toggle-label-large">
+                                <input type="checkbox" id="enableTwoRowLogic" />
+                                <span class="toggle-text-large">Creditor based logic (2 rows per transaction)</span>
+                            </label>
+                            <p class="setting-description">When enabled, each transaction produces two rows (Debit and Credit)</p>
+                        </div>
+                    </div>
+
+                    <!-- Warning Message -->
+                    <div class="warning-message" id="warningMessage" style="display: none;">
+                        <i class="ph ph-warning"></i>
+                        <span>Changes will affect future exports</span>
+                    </div>
+
+                    <!-- Helper Text -->
+                    <div class="helper-text">
+                        <i class="ph ph-info"></i>
+                        <span>Click on any row to configure column settings</span>
+                    </div>
+
+                    <!-- Configuration Table and Drawer Layout -->
                     <div class="config-layout">
-                        <!-- Main Content Area -->
-                        <div class="config-main">
-                            <!-- Config Header -->
-                            <div class="config-header">
-                                <div class="config-title-section">
-                                    <button class="back-btn" id="backToLandingBtn">
-                                        <i class="ph ph-arrow-left"></i>
-                                    </button>
-                                    <div>
-                                        <h2 class="config-title">CSV Export Configuration</h2>
-                                        <div class="config-meta" id="configMeta">
-                                            <!-- Last updated info will be shown here -->
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="config-actions">
-                                    <button class="btn-secondary" id="previewBtn">
-                                        <i class="ph ph-eye"></i>
-                                        Preview
-                                    </button>
-                                    <button class="btn-primary" id="saveBtn">
-                                        <i class="ph ph-floppy-disk"></i>
-                                        Save Configuration
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Warning Banner -->
-                            <div class="warning-banner" id="warningBanner" style="display: none;">
-                                <i class="ph ph-warning"></i>
-                                <span>Changes will affect future exports</span>
-                            </div>
-
-                            <!-- Global Settings -->
-                            <div class="global-settings-section">
-                                <div class="global-setting-item">
-                                    <label class="toggle-label">
-                                        <input type="checkbox" id="globalTwoRowToggle" class="toggle-checkbox-hidden" />
-                                        <span class="toggle-switch" id="globalToggleSwitch"></span>
-                                        <div class="toggle-text-group">
-                                            <span class="toggle-text">Creditor based logic (2 rows per transaction)</span>
-                                            <span class="toggle-help">When enabled, each transaction produces two rows (Debit and Credit)</span>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Simplified Configuration Table -->
+                        <div class="config-table-wrapper">
                             <div class="config-table-container">
                                 <table class="config-table" id="configTable">
                                     <thead>
@@ -214,8 +227,8 @@
                                             <th class="col-header">Column Header</th>
                                             <th class="col-field">Data Field</th>
                                             <th class="col-sample">Sample Value</th>
-                                            <th class="col-split" id="splitColumnHeader" style="display: none;">Debit/Credit</th>
-                                            <th class="col-status">Status</th>
+                                            <th class="col-format">Formatting</th>
+                                            <th class="col-actions">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="configTableBody">
@@ -232,23 +245,20 @@
                         <!-- Configuration Drawer -->
                         <div class="config-drawer" id="configDrawer">
                             <div class="drawer-header">
-                                <h3 class="drawer-title" id="drawerTitle">Select a column to configure</h3>
+                                <h3 class="drawer-title" id="drawerTitle">Configure Column</h3>
                                 <button class="drawer-close" id="closeDrawerBtn">
                                     <i class="ph ph-x"></i>
                                 </button>
                             </div>
                             <div class="drawer-content" id="drawerContent">
-                                <div class="drawer-empty-state">
-                                    <i class="ph ph-cursor-click"></i>
-                                    <p>Click on a row in the table to configure its settings</p>
-                                </div>
+                                <!-- Content will be dynamically populated -->
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 3: Preview Screen -->
-                <div class="step-container" id="step3" style="display: none;">
+                <div class="step-container" id="step3">
                     <div class="preview-header">
                         <button class="back-btn" id="backToConfigBtn">
                             <i class="ph ph-arrow-left"></i>
@@ -295,6 +305,7 @@
         </main>
     </div>
 
+    <!-- Modals -->
     <!-- Configuration Preview Modal -->
     <div class="modal-overlay" id="previewConfigModal" style="display: none;">
         <div class="modal modal-large">
@@ -340,6 +351,153 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-primary" id="closePreviewModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Behavior Popover -->
+    <div class="popover" id="behaviorPopover" style="display: none;">
+        <div class="popover-content">
+            <h4 class="popover-title">Debit/Credit Behavior</h4>
+            <div class="popover-options">
+                <label class="popover-option-label">
+                    <input type="checkbox" id="splitIntoColumns" class="popover-checkbox" />
+                    <span>Split into 2 columns</span>
+                </label>
+                <label class="popover-option-label">
+                    <input type="checkbox" id="splitIntoRows" class="popover-checkbox" />
+                    <span>Split into 2 rows</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formatting Dialog -->
+    <div class="modal-overlay" id="formattingModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="formattingModalTitle">Configure Formatting</h3>
+                <button class="modal-close" id="closeFormattingModal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Date Formatting Options -->
+                <div id="dateFormattingOptions" style="display: none;">
+                    <div class="formatting-section">
+                        <label class="formatting-label">Date Format</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="YYYY-MM-DD" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">YYYY-MM-DD</span>
+                                <span class="formatting-radio-example">2024-01-15</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="DD-MM-YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">DD-MM-YYYY</span>
+                                <span class="formatting-radio-example">15-01-2024</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="MM-DD-YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">MM-DD-YYYY</span>
+                                <span class="formatting-radio-example">01-15-2024</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="DD/MM/YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">DD/MM/YYYY</span>
+                                <span class="formatting-radio-example">15/01/2024</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="MM/DD/YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">MM/DD/YYYY</span>
+                                <span class="formatting-radio-example">01/15/2024</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amount Formatting Options -->
+                <div id="amountFormattingOptions" style="display: none;">
+                    <div class="formatting-section">
+                        <label class="formatting-label">Sign</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="as-is" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">As is</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="plus" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Plus (+)</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="minus" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Minus (-)</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="absolute" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Absolute Value</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="formatting-section">
+                        <label class="formatting-label">Decimal Separator</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="decimalSeparator" value="dot" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Dot (.)</span>
+                                <span class="formatting-radio-example">1234.56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="decimalSeparator" value="comma" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Comma (,)</span>
+                                <span class="formatting-radio-example">1234,56</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="formatting-section">
+                        <label class="formatting-label">Thousand Separator</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="comma" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Comma (,)</span>
+                                <span class="formatting-radio-example">1,234.56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="period" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Period (.)</span>
+                                <span class="formatting-radio-example">1.234,56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="space" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Space</span>
+                                <span class="formatting-radio-example">1 234.56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="none" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">None</span>
+                                <span class="formatting-radio-example">1234.56</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="formatting-section">
+                        <label class="formatting-toggle-label">
+                            <input type="checkbox" id="showCurrencyToggle" class="formatting-checkbox" />
+                            <span>Show Currency</span>
+                        </label>
+                        <div id="currencySymbolField" style="display: none; margin-top: 12px;">
+                            <label class="formatting-label">Currency Symbol</label>
+                            <input type="text" id="currencySymbolInput" class="formatting-input" placeholder="EUR" maxlength="10" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelFormattingBtn">Cancel</button>
+                <button class="btn-primary" id="saveFormattingBtn">Apply</button>
             </div>
         </div>
     </div>
