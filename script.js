@@ -54,7 +54,8 @@ let widgetState = {
         bigTop: 'large',
         small: 'small',
         bigBottom: 'large'
-    }
+    },
+    arrangeMode: false // Track if arrange mode is active
 };
 
 // Initialize state from localStorage or defaults
@@ -63,6 +64,14 @@ function initializeState() {
     if (saved) {
         const parsed = JSON.parse(saved);
         widgetState = { ...widgetState, ...parsed };
+        // Ensure arrangeMode is set
+        if (widgetState.arrangeMode === undefined) {
+            widgetState.arrangeMode = false;
+        }
+        // Ensure arrangeMode is set
+        if (widgetState.arrangeMode === undefined) {
+            widgetState.arrangeMode = false;
+        }
         // Ensure order structure exists
         if (!widgetState.order.bigTop) widgetState.order.bigTop = {};
         if (!widgetState.order.small) widgetState.order.small = {};
@@ -169,6 +178,28 @@ function initializeDashboard() {
     renderCustomizeDropdown();
     setupEventListeners();
     updateWidgetVisibility();
+    
+    // Initialize arrange mode state
+    const container = document.querySelector('.dashboard-container');
+    if (widgetState.arrangeMode) {
+        const arrangeBtn = document.getElementById('arrangeBtn');
+        if (arrangeBtn) {
+            arrangeBtn.classList.add('active');
+        }
+        if (container) {
+            container.classList.add('arrange-mode');
+        }
+        document.querySelectorAll('.widget').forEach(widget => {
+            widget.draggable = true;
+        });
+    } else {
+        if (container) {
+            container.classList.remove('arrange-mode');
+        }
+        document.querySelectorAll('.widget').forEach(widget => {
+            widget.draggable = false;
+        });
+    }
 }
 
 // Render dashboard sections in order
@@ -451,7 +482,7 @@ function createWidgetElement(widget) {
     div.dataset.widgetId = widget.id;
     div.dataset.widgetSection = widget.section;
     div.dataset.widgetSize = widget.size;
-    div.draggable = true;
+    div.draggable = widgetState.arrangeMode; // Only draggable when arrange mode is active
     
     div.innerHTML = `
         <div class="widget-header">
@@ -498,16 +529,11 @@ function renderCustomizeDropdown() {
             return (order[a.id] || 0) - (order[b.id] || 0);
         });
         
-        // Add widgets for this section (only if section is visible)
-        const sectionVisible = widgetState.sectionVisible !== undefined ? 
-            widgetState.sectionVisible[sectionId] !== false : true;
-        
-        if (sectionVisible) {
-            sortedWidgets.forEach(widget => {
-                const item = createDropdownItem(widget);
-                content.appendChild(item);
-            });
-        }
+        // Show all widgets in customize menu (removed section visibility filter)
+        sortedWidgets.forEach(widget => {
+            const item = createDropdownItem(widget);
+            content.appendChild(item);
+        });
         
         // Add divider after section (except for last section)
         if (sectionIndex < widgetState.sectionOrder.length - 1) {
@@ -517,9 +543,7 @@ function renderCustomizeDropdown() {
         }
     });
     
-    // Add "Add Section" button at the bottom
-    const addSectionContainer = createAddSectionButton();
-    content.appendChild(addSectionContainer);
+    // Removed "Add Section" functionality
 }
 
 // Create "Add Section" button and form
@@ -681,38 +705,17 @@ function createSectionHeader(sectionId) {
     header.draggable = true;
     
     header.innerHTML = `
-        <div class="section-header-content">
-            <span class="section-drag-handle" title="Drag to reorder sections"><i class="ph ph-list"></i></span>
-            <div class="section-name-container">
-                <span class="section-size-badge ${isLarge ? 'badge-large' : 'badge-small'}">${isLarge ? 'Large' : 'Small'}</span>
-                <span class="section-name-text">${sectionName}</span>
-                <button class="section-edit-btn" data-section="${sectionId}" title="Edit section name">
-                    <i class="ph ph-pencil-simple"></i>
-                </button>
-            </div>
-        </div>
-        <div class="section-header-actions">
-            <div class="toggle-switch ${isSectionVisible(sectionId) ? 'active' : ''}" data-section-id="${sectionId}"></div>
+        <div class="dropdown-section-header-content">
+            <span class="section-badge ${isLarge ? 'large' : 'small'}">${isLarge ? 'LARGE' : 'SMALL'}</span>
+            <span class="section-name-text">${sectionName}</span>
         </div>
     `;
     
-    // Add drag handlers
+    // Add drag handlers for section reordering
     header.addEventListener('dragstart', handleSectionHeaderDragStart);
     header.addEventListener('dragover', handleSectionHeaderDragOver);
     header.addEventListener('drop', handleSectionHeaderDrop);
     header.addEventListener('dragend', handleSectionHeaderDragEnd);
-    
-    // Add toggle handler
-    header.querySelector('.toggle-switch').addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleSectionVisibility(sectionId);
-    });
-    
-    // Add edit button handler
-    header.querySelector('.section-edit-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        editSectionName(sectionId, header);
-    });
     
     return header;
 }
@@ -1048,11 +1051,13 @@ function updateWidgetVisibility() {
 let draggedElement = null;
 
 function handleDragStart(e) {
-    if (e.target.closest('.widget').dataset.widgetId) {
-        draggedElement = e.target.closest('.widget');
+    const widget = e.target.closest('.widget');
+    if (widget && widget.dataset.widgetId) {
+        draggedElement = widget;
         draggedElement.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', draggedElement.innerHTML);
+        e.dataTransfer.setData('widget-id', draggedElement.dataset.widgetId);
         e.dataTransfer.setData('widget-section', draggedElement.dataset.widgetSection);
         e.dataTransfer.setData('widget-size', draggedElement.dataset.widgetSize);
     }
@@ -1110,27 +1115,61 @@ function handleDragOver(e) {
 
 function handleDrop(e) {
     e.preventDefault();
+    e.stopPropagation();
     
-    const targetWidget = e.target.closest('.widget');
+    // Try to find target widget - check multiple ways
+    let targetWidget = null;
+    
+    // First try closest widget
+    targetWidget = e.target.closest('.widget');
+    
+    // If that didn't work, try finding via parent elements
+    if (!targetWidget) {
+        let element = e.target;
+        while (element && element !== document.body) {
+            if (element.classList && element.classList.contains('widget')) {
+                targetWidget = element;
+                break;
+            }
+            element = element.parentElement;
+        }
+    }
+    
     const targetGrid = e.target.closest('.big-widgets-grid, .small-widgets-grid');
     
-    if (draggedElement) {
-        const draggedId = draggedElement.dataset.widgetId;
-        const draggedSection = draggedElement.dataset.widgetSection;
+    if (!draggedElement) {
+        return;
+    }
+    
+    const draggedId = draggedElement.dataset.widgetId;
+    const draggedSection = draggedElement.dataset.widgetSection;
+    
+    if (!draggedId || !draggedSection) {
+        console.warn('Dragged element missing data:', { draggedId, draggedSection });
+        return;
+    }
+    
+    if (targetWidget && targetWidget !== draggedElement && targetWidget.dataset.widgetId) {
+        // Dropping on another widget - swap positions
+        const targetId = targetWidget.dataset.widgetId;
+        const targetSection = targetWidget.dataset.widgetSection;
         
-        if (targetWidget && targetWidget !== draggedElement) {
-            // Dropping on another widget - reorder or move between sections
-            const targetId = targetWidget.dataset.widgetId;
-            const targetSection = targetWidget.dataset.widgetSection;
-            
-            if (draggedSection === targetSection) {
-                // Reorder within same section
-                reorderWidgetsInSection(draggedId, targetId, draggedSection);
-            } else {
-                // Allow moving between any sections
-                moveWidgetBetweenSections(draggedId, draggedSection, targetSection, targetId);
-            }
-        } else if (targetGrid && !targetWidget) {
+        console.log('Dropping widget:', { draggedId, targetId, draggedSection, targetSection });
+        
+        if (draggedSection === targetSection) {
+            // Reorder within same section - swap positions
+            console.log('Swapping widgets in same section');
+            reorderWidgetsInSection(draggedId, targetId, draggedSection);
+        } else {
+            // Move between sections
+            console.log('Moving widget between sections');
+            moveWidgetBetweenSections(draggedId, draggedSection, targetSection, targetId);
+        }
+        
+        saveState();
+        renderDashboardSections();
+        renderCustomizeDropdown();
+    } else if (targetGrid && !targetWidget) {
             // Dropping on empty space in a grid - move widget to that section
             // Extract section ID from grid - prefer dataset, then fall back to ID parsing
             let targetSection = targetGrid.dataset.sectionId;
@@ -1150,16 +1189,17 @@ function handleDrop(e) {
             if (targetSection && draggedSection !== targetSection) {
                 // Allow moving between any sections
                 moveWidgetBetweenSections(draggedId, draggedSection, targetSection);
+                saveState();
+                renderDashboardSections();
+                renderCustomizeDropdown();
             } else if (targetSection === draggedSection) {
                 // Dropping on empty space in same section - move to end
                 moveWidgetToEndOfSection(draggedId, draggedSection);
+                saveState();
+                renderDashboardSections();
+                renderCustomizeDropdown();
             }
         }
-        
-        saveState();
-        renderDashboardSections();
-        renderCustomizeDropdown();
-    }
     
     // Remove drag-over class from all widgets
     document.querySelectorAll('.widget').forEach(w => {
@@ -1167,8 +1207,10 @@ function handleDrop(e) {
     });
 }
 
-// Reorder widgets within the same section
+// Reorder widgets within the same section - swap positions
 function reorderWidgetsInSection(draggedId, targetId, section) {
+    console.log('reorderWidgetsInSection called:', { draggedId, targetId, section });
+    
     // Get the array for this section
     let sectionArray = null;
     if (section === 'bigTop') {
@@ -1177,26 +1219,48 @@ function reorderWidgetsInSection(draggedId, targetId, section) {
         sectionArray = widgetConfig.small;
     } else if (section === 'bigBottom') {
         sectionArray = widgetConfig.bigBottom;
+    } else if (section && section.startsWith('custom')) {
+        sectionArray = widgetConfig[section] || [];
     }
     
-    if (!sectionArray) return;
+    if (!sectionArray) {
+        console.warn(`Section array not found for: ${section}`);
+        return;
+    }
+    
+    console.log('Section array before swap:', sectionArray.map(w => w.id));
     
     // Find indices
     const draggedIndex = sectionArray.findIndex(w => w.id === draggedId);
     const targetIndex = sectionArray.findIndex(w => w.id === targetId);
     
-    if (draggedIndex === -1 || targetIndex === -1) return;
+    if (draggedIndex === -1) {
+        console.warn(`Dragged widget not found in array: ${draggedId}`);
+        return;
+    }
+    if (targetIndex === -1) {
+        console.warn(`Target widget not found in array: ${targetId}`);
+        return;
+    }
     
-    // Remove dragged widget from its current position
-    const [draggedWidget] = sectionArray.splice(draggedIndex, 1);
+    console.log('Indices:', { draggedIndex, targetIndex });
     
-    // Insert at target position
-    sectionArray.splice(targetIndex, 0, draggedWidget);
+    // Swap positions - actually swap the two widgets
+    const draggedWidget = sectionArray[draggedIndex];
+    const targetWidget = sectionArray[targetIndex];
+    
+    sectionArray[draggedIndex] = targetWidget;
+    sectionArray[targetIndex] = draggedWidget;
+    
+    console.log('Section array after swap:', sectionArray.map(w => w.id));
     
     // Recalculate order values based on new positions
+    widgetState.order[section] = widgetState.order[section] || {};
     sectionArray.forEach((widget, index) => {
         widgetState.order[section][widget.id] = index;
     });
+    
+    console.log('Order updated:', widgetState.order[section]);
 }
 
 // Move widget to end of section
@@ -1295,6 +1359,15 @@ function handleDragEnd(e) {
 
 // Setup event listeners
 function setupEventListeners() {
+    // Arrange button
+    const arrangeBtn = document.getElementById('arrangeBtn');
+    if (arrangeBtn) {
+        arrangeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleArrangeMode();
+        });
+    }
+    
     // Customize button
     const customizeBtn = document.getElementById('customizeBtn');
     const customizeDropdown = document.getElementById('customizeDropdown');
@@ -1327,6 +1400,31 @@ function setupEventListeners() {
             handleViewMore(widgetId);
         }
     });
+}
+
+// Toggle arrange mode
+function toggleArrangeMode() {
+    widgetState.arrangeMode = !widgetState.arrangeMode;
+    const arrangeBtn = document.getElementById('arrangeBtn');
+    const container = document.querySelector('.dashboard-container');
+    
+    if (widgetState.arrangeMode) {
+        arrangeBtn.classList.add('active');
+        container.classList.add('arrange-mode');
+        // Enable dragging on all widgets
+        document.querySelectorAll('.widget').forEach(widget => {
+            widget.draggable = true;
+        });
+    } else {
+        arrangeBtn.classList.remove('active');
+        container.classList.remove('arrange-mode');
+        // Disable dragging on all widgets
+        document.querySelectorAll('.widget').forEach(widget => {
+            widget.draggable = false;
+        });
+    }
+    
+    saveState();
 }
 
 // Show widget menu (context menu)
