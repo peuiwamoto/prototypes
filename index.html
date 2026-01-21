@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pliant Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">
+                    <img src="https://www.figma.com/api/mcp/asset/5bb754cc-a6d8-4a7f-a9e1-781c70f1e7af" alt="Pliant" class="logo-image logo-medium">
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="welcome-text">Welcome, John</div>
+                <div class="header-icons">
+                    <span class="icon"><i class="ph ph-bell"></i></span>
+                    <span class="icon"><i class="ph ph-question"></i></span>
+                    <span class="icon"><i class="ph ph-gear"></i></span>
+                    <span class="icon"><i class="ph ph-user"></i></span>
+                </div>
+                <button class="my-cards-btn">My cards</button>
+            </div>
+        </header>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="action-btn">Issue card</button>
+            <button class="action-btn">Transfer</button>
+            <button class="action-btn">Invite member</button>
+            <div class="customize-wrapper">
+                <button class="customize-btn" id="customizeBtn">
+                    <span class="customize-icon"><i class="ph ph-sliders"></i></span>
+                    Customize
+                </button>
+                <div class="customize-dropdown" id="customizeDropdown">
+                    <div class="dropdown-content" id="customizeContent">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sections will be dynamically reordered -->
+        <section class="big-widgets-section" id="bigWidgetsTop">
+            <div class="big-widgets-grid" id="bigWidgetsGridTop">
+                <!-- Widgets will be dynamically managed -->
+            </div>
+        </section>
+
+        <section class="small-widgets-section" id="smallWidgetsSection">
+            <div class="small-widgets-grid" id="smallWidgetsGrid">
+                <!-- Widgets will be dynamically managed -->
+            </div>
+        </section>
+
+        <section class="big-widgets-section" id="bigWidgetsBottom">
+            <div class="big-widgets-grid" id="bigWidgetsGridBottom">
+                <!-- Widgets will be dynamically managed -->
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

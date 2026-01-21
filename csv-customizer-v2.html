@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Customizer - Pliant</title>
+    <link rel="stylesheet" href="csv-customizer-v2.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-name">
+                    <img src="https://www.figma.com/api/mcp/asset/5bb754cc-a6d8-4a7f-a9e1-781c70f1e7af" alt="Pliant" class="brand-logo">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item">
+                    <i class="ph ph-grid-four"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <i class="ph ph-users"></i>
+                        <span>Members & Teams</span>
+                        <i class="ph ph-caret-down nav-chevron"></i>
+                    </div>
+                </div>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-buildings"></i>
+                    <span>Accounts</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-credit-card"></i>
+                    <span>Cards</span>
+                </a>
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <i class="ph ph-arrows-clockwise"></i>
+                        <span>Transactions</span>
+                        <i class="ph ph-caret-down nav-chevron"></i>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <i class="ph ph-upload"></i>
+                        <span>Account Export</span>
+                        <i class="ph ph-caret-down nav-chevron"></i>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <i class="ph ph-file-text"></i>
+                        <span>Billing</span>
+                        <i class="ph ph-caret-down nav-chevron"></i>
+                    </div>
+                </div>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-star"></i>
+                    <span>Rewards</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-storefront"></i>
+                    <span>Merchants</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-globe"></i>
+                    <span>Pliant Earth</span>
+                </a>
+                <div class="nav-section expanded">
+                    <div class="nav-section-header">
+                        <i class="ph ph-gear"></i>
+                        <span>Settings</span>
+                        <i class="ph ph-caret-up nav-chevron"></i>
+                    </div>
+                    <div class="nav-section-content">
+                        <a href="#" class="nav-item">
+                            <span>Organization</span>
+                        </a>
+                        <a href="#" class="nav-item">
+                            <span>Policies</span>
+                        </a>
+                        <a href="#" class="nav-item active">
+                            <span>Accounting</span>
+                        </a>
+                        <a href="#" class="nav-item">
+                            <span>Modules</span>
+                        </a>
+                        <a href="#" class="nav-item">
+                            <span>Integrations</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header Icons -->
+            <div class="header-icons">
+                <span class="icon"><i class="ph ph-bell"></i><span class="notification-badge"></span></span>
+                <span class="icon"><i class="ph ph-question"></i></span>
+                <span class="icon"><i class="ph ph-gear"></i></span>
+                <span class="icon"><i class="ph ph-user"></i></span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="breadcrumb">Settings</div>
+                <h1 class="page-title">Accounting</h1>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <a href="#" class="tab">General</a>
+                    <a href="#" class="tab">G/L Accounts</a>
+                    <a href="#" class="tab">VAT Rates</a>
+                    <a href="#" class="tab">Suppliers</a>
+                    <a href="#" class="tab">Cost Centers & Units</a>
+                    <a href="#" class="tab">Accounts</a>
+                    <a href="#" class="tab active">CSV Customizer</a>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Configuration Screen -->
+                <div class="step-container" id="step1">
+                    <div class="config-header">
+                        <div class="config-title-section">
+                            <div>
+                                <h2 class="config-title">CSV Export Configuration</h2>
+                                <div class="config-meta" id="configMeta">
+                                    <span class="meta-item">Last updated by: <strong>John Doe</strong></span>
+                                    <span class="meta-separator">•</span>
+                                    <span class="meta-item">Last updated at: <strong id="lastUpdatedAt">—</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="config-actions">
+                            <button class="btn-secondary" id="previewBtn">
+                                <i class="ph ph-eye"></i>
+                                Preview
+                            </button>
+                            <button class="btn-secondary" id="cancelBtn" style="display: none;">
+                                <i class="ph ph-x"></i>
+                                Cancel
+                            </button>
+                            <button class="btn-primary" id="saveConfigBtn" disabled>
+                                <i class="ph ph-floppy-disk"></i>
+                                Save configuration
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Global Settings -->
+                    <div class="global-settings-section">
+                        <div class="global-setting-item">
+                            <label class="toggle-label-large">
+                                <input type="checkbox" id="enableTwoRowLogic" />
+                                <span class="toggle-text-large">Creditor based logic (2 rows per transaction)</span>
+                            </label>
+                            <p class="setting-description">When enabled, each transaction produces two rows (Debit and Credit)</p>
+                        </div>
+                    </div>
+
+                    <!-- Warning Message -->
+                    <div class="warning-message" id="warningMessage" style="display: none;">
+                        <i class="ph ph-warning"></i>
+                        <span>Changes will affect future exports</span>
+                    </div>
+
+                    <!-- Configuration Table -->
+                    <div class="config-table-container">
+                        <table class="config-table" id="configTable">
+                            <thead>
+                                <tr>
+                                    <th class="col-order">Order</th>
+                                    <th class="col-header">Column Header</th>
+                                    <th class="col-field">Data Field</th>
+                                    <th class="col-sample">Sample Value</th>
+                                    <th class="col-format">Formatting</th>
+                                    <th class="col-row1" id="colRow1Header" style="display: none;">Row 1</th>
+                                    <th class="col-row2" id="colRow2Header" style="display: none;">Row 2</th>
+                                    <th class="col-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="configTableBody">
+                                <!-- Rows will be dynamically added -->
+                            </tbody>
+                        </table>
+                        <button class="btn-add-row" id="addRowBtn">
+                            <i class="ph ph-plus"></i>
+                            Add column
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Preview Screen -->
+                <div class="step-container" id="step3" style="display: none;">
+                    <div class="preview-header">
+                        <button class="back-btn" id="backToConfigBtn">
+                            <i class="ph ph-arrow-left"></i>
+                        </button>
+                        <h2 class="preview-title">Preview Export Output</h2>
+                    </div>
+
+                    <div class="preview-content">
+                        <!-- Table Preview -->
+                        <div class="preview-section">
+                            <h3 class="preview-section-title">Table Preview</h3>
+                            <div class="preview-table-container">
+                                <table class="preview-table" id="previewTable">
+                                    <thead id="previewTableHead">
+                                        <!-- Headers will be dynamically added -->
+                                    </thead>
+                                    <tbody id="previewTableBody">
+                                        <!-- Rows will be dynamically added -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Raw CSV Preview -->
+                        <div class="preview-section">
+                            <div class="preview-section-header">
+                                <h3 class="preview-section-title">Raw CSV Preview</h3>
+                                <div class="preview-actions">
+                                    <button class="btn-secondary" id="copyCsvBtn">
+                                        <i class="ph ph-copy"></i>
+                                        Copy CSV
+                                    </button>
+                                    <button class="btn-secondary" id="downloadCsvBtn">
+                                        <i class="ph ph-download"></i>
+                                        Download sample CSV
+                                    </button>
+                                </div>
+                            </div>
+                            <pre class="csv-preview" id="csvPreview"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Configuration Preview Modal -->
+    <div class="modal-overlay" id="previewConfigModal" style="display: none;">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h3 class="modal-title" id="previewModalTitle">Preview Configuration</h3>
+                <button class="modal-close" id="closePreviewModal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <div class="preview-config-info" id="previewConfigInfo">
+                    <!-- Configuration info will be added here -->
+                </div>
+                <div class="preview-section">
+                    <h3 class="preview-section-title">Table Preview</h3>
+                    <div class="preview-table-container">
+                        <table class="preview-table" id="previewModalTable">
+                            <thead id="previewModalTableHead">
+                                <!-- Headers will be dynamically added -->
+                            </thead>
+                            <tbody id="previewModalTableBody">
+                                <!-- Rows will be dynamically added -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="preview-section">
+                    <div class="preview-section-header">
+                        <h3 class="preview-section-title">Raw CSV Preview</h3>
+                        <div class="preview-actions">
+                            <button class="btn-secondary" id="copyCsvModalBtn">
+                                <i class="ph ph-copy"></i>
+                                Copy CSV
+                            </button>
+                            <button class="btn-secondary" id="downloadCsvModalBtn">
+                                <i class="ph ph-download"></i>
+                                Download sample CSV
+                            </button>
+                        </div>
+                    </div>
+                    <pre class="csv-preview" id="previewModalCsv"></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="closePreviewModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Behavior Popover -->
+    <div class="popover" id="behaviorPopover" style="display: none;">
+        <div class="popover-content">
+            <h4 class="popover-title">Debit/Credit Behavior</h4>
+            <div class="popover-options">
+                <label class="popover-option-label">
+                    <input type="checkbox" id="splitIntoColumns" class="popover-checkbox" />
+                    <span>Split into 2 columns</span>
+                </label>
+                <label class="popover-option-label">
+                    <input type="checkbox" id="splitIntoRows" class="popover-checkbox" />
+                    <span>Split into 2 rows</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formatting Dialog -->
+    <div class="modal-overlay" id="formattingModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="formattingModalTitle">Configure Formatting</h3>
+                <button class="modal-close" id="closeFormattingModal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Date Formatting Options -->
+                <div id="dateFormattingOptions" style="display: none;">
+                    <div class="formatting-section">
+                        <label class="formatting-label">Date Format</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="YYYY-MM-DD" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">YYYY-MM-DD</span>
+                                <span class="formatting-radio-example">2024-01-15</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="DD-MM-YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">DD-MM-YYYY</span>
+                                <span class="formatting-radio-example">15-01-2024</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="MM-DD-YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">MM-DD-YYYY</span>
+                                <span class="formatting-radio-example">01-15-2024</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="DD/MM/YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">DD/MM/YYYY</span>
+                                <span class="formatting-radio-example">15/01/2024</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="MM/DD/YYYY" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">MM/DD/YYYY</span>
+                                <span class="formatting-radio-example">01/15/2024</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amount Formatting Options -->
+                <div id="amountFormattingOptions" style="display: none;">
+                    <div class="formatting-section">
+                        <label class="formatting-label">Sign</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="as-is" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">As is</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="plus" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Plus (+)</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="minus" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Minus (-)</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="amountSign" value="absolute" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Absolute Value</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="formatting-section">
+                        <label class="formatting-label">Decimal Separator</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="decimalSeparator" value="dot" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Dot (.)</span>
+                                <span class="formatting-radio-example">1234.56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="decimalSeparator" value="comma" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Comma (,)</span>
+                                <span class="formatting-radio-example">1234,56</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="formatting-section">
+                        <label class="formatting-label">Thousand Separator</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="comma" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Comma (,)</span>
+                                <span class="formatting-radio-example">1,234.56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="period" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Period (.)</span>
+                                <span class="formatting-radio-example">1.234,56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="space" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Space</span>
+                                <span class="formatting-radio-example">1 234.56</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="thousandSeparator" value="none" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">None</span>
+                                <span class="formatting-radio-example">1234.56</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="formatting-section">
+                        <label class="formatting-toggle-label">
+                            <input type="checkbox" id="showCurrencyToggle" class="formatting-checkbox" />
+                            <span>Show Currency</span>
+                        </label>
+                        <div id="currencySymbolField" style="display: none; margin-top: 12px;">
+                            <label class="formatting-label">Currency Symbol</label>
+                            <input type="text" id="currencySymbolInput" class="formatting-input" placeholder="EUR" maxlength="10" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelFormattingBtn">Cancel</button>
+                <button class="btn-primary" id="saveFormattingBtn">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="csv-customizer-v2.js"></script>
+</body>
+</html>

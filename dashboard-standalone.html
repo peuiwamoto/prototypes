@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pliant Dashboard</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.header-left .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2563eb;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.welcome-text {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.header-icons {
+    display: flex;
+    gap: 10px;
+}
+
+.icon {
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon i {
+    font-size: 20px;
+    color: #666;
+}
+
+.my-cards-btn {
+    padding: 8px 16px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 20px 0;
+    align-items: center;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background-color: #f9fafb;
+    border-color: #2563eb;
+}
+
+.customize-wrapper {
+    position: relative;
+    margin-left: auto;
+}
+
+.customize-btn {
+    padding: 10px 20px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.customize-btn:hover {
+    background-color: #f9fafb;
+    border-color: #2563eb;
+}
+
+.customize-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.customize-icon i {
+    font-size: 16px;
+}
+
+.customize-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 250px;
+    z-index: 1000;
+    display: none;
+}
+
+.customize-dropdown.active {
+    display: block;
+}
+
+.dropdown-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.dropdown-content {
+    padding: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f9fafb;
+}
+
+.dropdown-item-label {
+    font-size: 14px;
+}
+
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggle-switch.active {
+    background-color: #2563eb;
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+.toggle-switch.active::after {
+    transform: translateX(20px);
+}
+
+/* Sections */
+.top-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.middle-section {
+    margin-bottom: 30px;
+}
+
+.bottom-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Widgets */
+.widget {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 200px;
+    transition: all 0.3s;
+}
+
+.widget.hidden {
+    display: none;
+}
+
+.widget.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.widget.drag-over {
+    border-color: #2563eb;
+    border-width: 2px;
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.widget-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.widget-toggle {
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-toggle i {
+    font-size: 18px;
+    color: #666;
+}
+
+.widget-toggle:hover {
+    opacity: 1;
+}
+
+.widget-menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-menu-btn i {
+    font-size: 18px;
+    color: #666;
+}
+
+.widget-menu-btn:hover {
+    opacity: 1;
+}
+
+.widget-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.widget-content {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+}
+
+/* Financial Widgets */
+.financial-widget {
+    min-height: 250px;
+}
+
+.balance-amount {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.balance-chart,
+.development-chart {
+    width: 100%;
+    height: 100px;
+    background-color: #f9fafb;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.balance-chart i,
+.development-chart i {
+    font-size: 48px;
+    color: #2563eb;
+    opacity: 0.6;
+}
+
+/* Middle Section Grid */
+.widgets-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.widget.size-1-3 {
+    grid-column: span 1;
+}
+
+.widget.size-2-3 {
+    grid-column: span 2;
+}
+
+/* Widget Controls */
+.widget-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.control-btn {
+    padding: 6px 12px;
+    background-color: #f9fafb;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.control-btn:hover {
+    background-color: #e9ecef;
+    border-color: #2563eb;
+}
+
+.control-btn.active {
+    background-color: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+/* Analytics Widgets */
+.analytics-widget {
+    min-height: 250px;
+}
+
+.analytics-placeholder {
+    font-size: 16px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analytics-placeholder i {
+    font-size: 20px;
+    color: #999;
+}
+
+.dropdown-item-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 8px;
+}
+
+.dropdown-item-icon i {
+    font-size: 18px;
+    color: #666;
+}
+
+.dropdown-drag-handle {
+    cursor: grab;
+    padding: 4px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.dropdown-drag-handle:hover {
+    opacity: 1;
+}
+
+.dropdown-drag-handle i {
+    font-size: 16px;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .widgets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .widget.size-2-3 {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .widgets-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .widget.size-2-3 {
+        grid-column: span 1;
+    }
+    
+    .top-section,
+    .bottom-section {
+        grid-template-columns: 1fr;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">pliant</div>
+            </div>
+            <div class="header-right">
+                <div class="welcome-text">Welcome, John</div>
+                <div class="header-icons">
+                    <span class="icon"><i class="ph ph-bell"></i></span>
+                    <span class="icon"><i class="ph ph-question"></i></span>
+                    <span class="icon"><i class="ph ph-gear"></i></span>
+                    <span class="icon"><i class="ph ph-user"></i></span>
+                </div>
+                <button class="my-cards-btn">My cards</button>
+            </div>
+        </header>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="action-btn">Issue card</button>
+            <button class="action-btn">Transfer</button>
+            <button class="action-btn">Invite member</button>
+            <div class="customize-wrapper">
+                <button class="customize-btn" id="customizeBtn">
+                    <span class="customize-icon"><i class="ph ph-sliders"></i></span>
+                    Customize
+                </button>
+                <div class="customize-dropdown" id="customizeDropdown">
+                    <div class="dropdown-header">Customize Dashboard</div>
+                    <div class="dropdown-content" id="customizeContent">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Section: Fixed Financial Overview -->
+        <section class="top-section" id="topSection">
+            <div class="widget financial-widget" data-widget-id="account-balance">
+                <div class="widget-header">
+                    <h3>Account Balance</h3>
+                    <span class="widget-toggle" data-target="account-balance"><i class="ph ph-eye"></i></span>
+                </div>
+                <div class="widget-content">
+                    <div class="balance-amount">€500.000</div>
+                    <div class="balance-chart"><i class="ph ph-chart-bar"></i></div>
+                </div>
+            </div>
+            <div class="widget financial-widget" data-widget-id="balance-development">
+                <div class="widget-header">
+                    <h3>Balance Development</h3>
+                    <span class="widget-toggle" data-target="balance-development"><i class="ph ph-eye"></i></span>
+                </div>
+                <div class="widget-content">
+                    <div class="development-chart"><i class="ph ph-chart-line-up"></i></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Middle Section: Customizable Feature Modules -->
+        <section class="middle-section" id="middleSection">
+            <div class="widgets-grid" id="widgetsGrid">
+                <!-- Widgets will be dynamically managed -->
+            </div>
+        </section>
+
+        <!-- Bottom Section: Analytics & Insights -->
+        <section class="bottom-section" id="bottomSection">
+            <div class="widget analytics-widget" data-widget-id="top-employees">
+                <div class="widget-header">
+                    <h3>Top Employees by Spend</h3>
+                    <span class="widget-toggle" data-target="top-employees"><i class="ph ph-eye"></i></span>
+                </div>
+                <div class="widget-content">
+                    <div class="analytics-placeholder"><i class="ph ph-chart-bar"></i> Analytics data</div>
+                </div>
+            </div>
+            <div class="widget analytics-widget" data-widget-id="top-categories">
+                <div class="widget-header">
+                    <h3>Top Categories by Spend</h3>
+                    <span class="widget-toggle" data-target="top-categories"><i class="ph ph-eye"></i></span>
+                </div>
+                <div class="widget-content">
+                    <div class="analytics-placeholder"><i class="ph ph-chart-bar"></i> Analytics data</div>
+                </div>
+            </div>
+            <div class="widget analytics-widget" data-widget-id="top-merchants">
+                <div class="widget-header">
+                    <h3>Top Merchants by Spend</h3>
+                    <span class="widget-toggle" data-target="top-merchants"><i class="ph ph-eye"></i></span>
+                </div>
+                <div class="widget-content">
+                    <div class="analytics-placeholder"><i class="ph ph-chart-bar"></i> Analytics data</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+// Dashboard Widget Configuration
+const widgetConfig = {
+    // Top section widgets (fixed position, hideable only)
+    top: [
+        { id: 'account-balance', label: 'Balance', section: 'top' },
+        { id: 'balance-development', label: 'Development', section: 'top' }
+    ],
+    
+    // Middle section widgets (fully customizable)
+    middle: [
+        { id: 'cashback', label: 'Cashback', section: 'middle', size: '1-3' },
+        { id: 'members', label: 'Members', section: 'middle', size: '1-3' },
+        { id: 'cards', label: 'Cards', section: 'middle', size: '1-3' },
+        { id: 'transaction-review', label: 'Transaction Review', section: 'middle', size: '1-3' },
+        { id: 'bank-transfers', label: 'Bank Transfers', section: 'middle', size: '1-3' },
+        { id: 'accounting', label: 'Accounting', section: 'middle', size: '1-3' },
+        { id: 'admin-tasks', label: 'Admin Tasks', section: 'middle', size: '1-3' }
+    ],
+    
+    // Bottom section widgets (limited customization)
+    bottom: [
+        { id: 'top-employees', label: 'Top Employees', section: 'bottom' },
+        { id: 'top-categories', label: 'Top Categories', section: 'bottom' },
+        { id: 'top-merchants', label: 'Top Merchants', section: 'bottom' }
+    ]
+};
+
+// State management
+let widgetState = {
+    visible: {},
+    order: {},
+    sizes: {}
+};
+
+// Initialize state from localStorage or defaults
+function initializeState() {
+    const saved = localStorage.getItem('dashboardState');
+    if (saved) {
+        widgetState = JSON.parse(saved);
+    } else {
+        // Initialize all widgets as visible
+        [...widgetConfig.top, ...widgetConfig.middle, ...widgetConfig.bottom].forEach(widget => {
+            widgetState.visible[widget.id] = true;
+            if (widget.section === 'middle') {
+                widgetState.sizes[widget.id] = widget.size || '1-3';
+            }
+        });
+        // Initialize order for middle section
+        widgetConfig.middle.forEach((widget, index) => {
+            widgetState.order[widget.id] = index;
+        });
+    }
+}
+
+// Save state to localStorage
+function saveState() {
+    localStorage.setItem('dashboardState', JSON.stringify(widgetState));
+}
+
+// Initialize dashboard
+function initializeDashboard() {
+    initializeState();
+    renderMiddleSection();
+    renderCustomizeDropdown();
+    setupEventListeners();
+    updateWidgetVisibility();
+}
+
+// Render middle section widgets
+function renderMiddleSection() {
+    const grid = document.getElementById('widgetsGrid');
+    grid.innerHTML = '';
+    
+    // Sort middle widgets by order
+    const sortedWidgets = [...widgetConfig.middle]
+        .filter(w => widgetState.visible[w.id] !== false)
+        .sort((a, b) => (widgetState.order[a.id] || 0) - (widgetState.order[b.id] || 0));
+    
+    sortedWidgets.forEach(widget => {
+        const widgetEl = createWidgetElement(widget);
+        grid.appendChild(widgetEl);
+    });
+}
+
+// Create widget element
+function createWidgetElement(widget) {
+    const div = document.createElement('div');
+    div.className = `widget size-${widgetState.sizes[widget.id] || '1-3'}`;
+    div.dataset.widgetId = widget.id;
+    div.draggable = true;
+    
+    div.innerHTML = `
+        <div class="widget-header">
+            <h3>${widget.label}</h3>
+            <span class="widget-toggle" data-target="${widget.id}"><i class="ph ph-eye"></i></span>
+        </div>
+        <div class="widget-content">
+            <div style="color: #999; font-size: 14px;">Widget content placeholder</div>
+        </div>
+        ${widget.section === 'middle' ? `
+        <div class="widget-controls">
+            <button class="control-btn ${widgetState.sizes[widget.id] === '1-3' ? 'active' : ''}" 
+                    data-action="resize" data-size="1-3" data-widget="${widget.id}">
+                1/3
+            </button>
+            <button class="control-btn ${widgetState.sizes[widget.id] === '2-3' ? 'active' : ''}" 
+                    data-action="resize" data-size="2-3" data-widget="${widget.id}">
+                2/3
+            </button>
+        </div>
+        ` : ''}
+    `;
+    
+    // Add drag and drop handlers
+    div.addEventListener('dragstart', handleDragStart);
+    div.addEventListener('dragover', handleDragOver);
+    div.addEventListener('drop', handleDrop);
+    div.addEventListener('dragend', handleDragEnd);
+    
+    // Add resize button handlers
+    if (widget.section === 'middle') {
+        div.querySelectorAll('[data-action="resize"]').forEach(btn => {
+            btn.addEventListener('click', handleResize);
+        });
+    }
+    
+    return div;
+}
+
+// Render customize dropdown
+function renderCustomizeDropdown() {
+    const content = document.getElementById('customizeContent');
+    content.innerHTML = '';
+    
+    // Add top section widgets
+    widgetConfig.top.forEach(widget => {
+        const item = createDropdownItem(widget);
+        content.appendChild(item);
+    });
+    
+    // Add middle section widgets
+    widgetConfig.middle.forEach(widget => {
+        const item = createDropdownItem(widget);
+        content.appendChild(item);
+    });
+    
+    // Add bottom section widgets
+    widgetConfig.bottom.forEach(widget => {
+        const item = createDropdownItem(widget);
+        content.appendChild(item);
+    });
+}
+
+// Create dropdown item
+function createDropdownItem(widget) {
+    const div = document.createElement('div');
+    div.className = 'dropdown-item';
+    div.dataset.widgetId = widget.id;
+    
+    const isVisible = widgetState.visible[widget.id] !== false;
+    
+    div.innerHTML = `
+        <span class="dropdown-item-label">${widget.label}</span>
+        <div class="toggle-switch ${isVisible ? 'active' : ''}" data-widget-id="${widget.id}"></div>
+    `;
+    
+    div.querySelector('.toggle-switch').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleWidgetVisibility(widget.id);
+    });
+    
+    return div;
+}
+
+// Toggle widget visibility
+function toggleWidgetVisibility(widgetId) {
+    widgetState.visible[widgetId] = !widgetState.visible[widgetId];
+    saveState();
+    updateWidgetVisibility();
+    renderCustomizeDropdown();
+    
+    // Re-render middle section if it's a middle widget
+    const widget = [...widgetConfig.top, ...widgetConfig.middle, ...widgetConfig.bottom]
+        .find(w => w.id === widgetId);
+    if (widget && widget.section === 'middle') {
+        renderMiddleSection();
+    }
+}
+
+// Update widget visibility
+function updateWidgetVisibility() {
+    [...widgetConfig.top, ...widgetConfig.middle, ...widgetConfig.bottom].forEach(widget => {
+        const element = document.querySelector(`[data-widget-id="${widget.id}"]`);
+        if (element) {
+            if (widgetState.visible[widget.id] === false) {
+                element.classList.add('hidden');
+            } else {
+                element.classList.remove('hidden');
+            }
+        }
+    });
+}
+
+// Drag and Drop handlers
+let draggedElement = null;
+
+function handleDragStart(e) {
+    if (e.target.closest('.widget').dataset.widgetId) {
+        draggedElement = e.target.closest('.widget');
+        draggedElement.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', draggedElement.innerHTML);
+    }
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    const widget = e.target.closest('.widget');
+    if (widget && widget !== draggedElement && widget.dataset.widgetId) {
+        widget.classList.add('drag-over');
+    }
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    
+    const targetWidget = e.target.closest('.widget');
+    if (targetWidget && draggedElement && targetWidget !== draggedElement) {
+        const draggedId = draggedElement.dataset.widgetId;
+        const targetId = targetWidget.dataset.widgetId;
+        
+        // Swap order
+        const temp = widgetState.order[draggedId];
+        widgetState.order[draggedId] = widgetState.order[targetId];
+        widgetState.order[targetId] = temp;
+        
+        saveState();
+        renderMiddleSection();
+    }
+    
+    // Remove drag-over class from all widgets
+    document.querySelectorAll('.widget').forEach(w => {
+        w.classList.remove('drag-over');
+    });
+}
+
+function handleDragEnd(e) {
+    if (draggedElement) {
+        draggedElement.classList.remove('dragging');
+        draggedElement = null;
+    }
+    
+    // Remove drag-over class from all widgets
+    document.querySelectorAll('.widget').forEach(w => {
+        w.classList.remove('drag-over');
+    });
+}
+
+// Handle resize
+function handleResize(e) {
+    const widgetId = e.target.dataset.widget;
+    const newSize = e.target.dataset.size;
+    
+    widgetState.sizes[widgetId] = newSize;
+    saveState();
+    renderMiddleSection();
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Customize button
+    const customizeBtn = document.getElementById('customizeBtn');
+    const customizeDropdown = document.getElementById('customizeDropdown');
+    
+    customizeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        customizeDropdown.classList.toggle('active');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!customizeBtn.contains(e.target) && !customizeDropdown.contains(e.target)) {
+            customizeDropdown.classList.remove('active');
+        }
+    });
+    
+    // Widget toggle buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('widget-toggle')) {
+            const widgetId = e.target.dataset.target;
+            toggleWidgetVisibility(widgetId);
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>

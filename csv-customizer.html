@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Customizer - Pliant</title>
+    <link rel="stylesheet" href="csv-customizer.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-name">pliant</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <i class="ph ph-file-csv"></i>
+                    <span>CSV Customizer</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-table"></i>
+                    <span>Data Management</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-download"></i>
+                    <span>Exports</span>
+                </a>
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <i class="ph ph-gear"></i>
+                        <span>Settings</span>
+                        <i class="ph ph-caret-down nav-chevron"></i>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <h1 class="page-title">CSV Customizer</h1>
+                    <p class="page-subtitle">Upload, customize, and export your CSV files</p>
+                </div>
+            </header>
+
+            <!-- Upload Section -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-card">
+                    <div class="upload-icon">
+                        <i class="ph ph-cloud-arrow-up"></i>
+                    </div>
+                    <h2 class="upload-title">Upload CSV File</h2>
+                    <p class="upload-description">Drag and drop your CSV file here, or click to browse</p>
+                    <input type="file" id="csvFileInput" accept=".csv" class="file-input" />
+                    <label for="csvFileInput" class="upload-button">
+                        <i class="ph ph-folder-open"></i>
+                        Choose File
+                    </label>
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <span class="file-name" id="fileName"></span>
+                        <button class="remove-file-btn" id="removeFileBtn">
+                            <i class="ph ph-x"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Customization Section -->
+            <section class="customization-section" id="customizationSection" style="display: none;">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <h2 class="section-title">Customize Columns</h2>
+                        <span class="row-count" id="rowCount"></span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn-secondary" id="resetBtn">
+                            <i class="ph ph-arrow-counter-clockwise"></i>
+                            Reset
+                        </button>
+                        <button class="btn-primary" id="exportBtn">
+                            <i class="ph ph-download"></i>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Column Customization Panel -->
+                <div class="columns-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Column Settings</h3>
+                        <button class="panel-toggle" id="panelToggle">
+                            <i class="ph ph-caret-up"></i>
+                        </button>
+                    </div>
+                    <div class="panel-content" id="panelContent">
+                        <div class="columns-list" id="columnsList">
+                            <!-- Columns will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Preview Table -->
+                <div class="table-container">
+                    <div class="table-wrapper">
+                        <table class="data-table" id="dataTable">
+                            <thead id="tableHead">
+                                <!-- Headers will be dynamically added -->
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Rows will be dynamically added -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="csv-customizer.js"></script>
+</body>
+</html>

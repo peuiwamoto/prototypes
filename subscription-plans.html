@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Plans - C Teleport</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="subscription-plans.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="payment-program-container">
+        <!-- Header Bar -->
+        <header class="program-header">
+            <div class="header-left">
+                <span class="partner-view">Partner View: C Teleport</span>
+            </div>
+            <div class="header-right">
+                <button class="back-btn">Back to Partners</button>
+                <div class="header-icons">
+                    <span class="icon"><i class="ph ph-bell"></i></span>
+                    <span class="icon"><i class="ph ph-user"></i></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="program-layout">
+            <!-- Left Sidebar -->
+            <aside class="program-sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-circle">C</div>
+                    <span class="sidebar-title">C Teleport</span>
+                </div>
+                <nav class="sidebar-nav">
+                    <div class="nav-section">
+                        <div class="nav-item">
+                            <i class="ph ph-chart-line"></i>
+                            <span>Data & Insights</span>
+                            <i class="ph ph-caret-down"></i>
+                        </div>
+                    </div>
+                    <div class="nav-section expanded">
+                        <div class="nav-item">
+                            <i class="ph ph-caret-down"></i>
+                            <span>Management</span>
+                        </div>
+                        <div class="nav-submenu">
+                            <div class="nav-item active">
+                                <i class="ph ph-credit-card"></i>
+                                <span>Payment Programs</span>
+                            </div>
+                            <div class="nav-item">
+                                <i class="ph ph-users"></i>
+                                <span>Partner Users</span>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div class="sidebar-footer">
+                    <span class="sandbox-label">SANDBOX</span>
+                    <div class="sandbox-logo">P</div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="program-content">
+                <!-- Breadcrumbs -->
+                <div class="breadcrumbs">
+                    <span>Payment Programs</span>
+                    <i class="ph ph-caret-right"></i>
+                    <span>C Teleport</span>
+                </div>
+
+                <!-- Page Title -->
+                <h1 class="page-title">C Teleport</h1>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab">Infos</button>
+                    <button class="tab">Card Products</button>
+                    <button class="tab">Feature Modules</button>
+                    <button class="tab">Notifications</button>
+                    <button class="tab active">Subscription Plans</button>
+                    <button class="tab">API Credentials</button>
+                </div>
+
+                <!-- Subscription Plans Section -->
+                <div class="subscription-plans-section">
+                    <!-- Plan Selector and Actions -->
+                    <div class="plan-header">
+                        <div class="plan-selector-group">
+                            <label for="planSelector" class="plan-selector-label">Subscription Plan:</label>
+                            <select id="planSelector" class="plan-selector">
+                                <option value="default">Default Plan</option>
+                            </select>
+                            <span class="default-badge" id="defaultBadge">Default</span>
+                        </div>
+                        <div class="plan-actions">
+                            <button class="btn-secondary" id="makeDefaultBtn" style="display: none;">
+                                <i class="ph ph-star"></i>
+                                Make Default
+                            </button>
+                            <button class="btn-secondary" id="createPlanBtn">
+                                <i class="ph ph-plus"></i>
+                                Create New Plan
+                            </button>
+                            <button class="btn-primary" id="applyToOrgsBtn">
+                                <i class="ph ph-users"></i>
+                                Apply to Organizations
+                            </button>
+                            <button class="btn-secondary" id="deletePlanBtn" style="display: none;">
+                                <i class="ph ph-trash"></i>
+                                Delete Plan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Value Change Warning Banner -->
+                    <div class="warning-banner" id="valueChangeWarning" style="display: none;">
+                        <i class="ph ph-warning"></i>
+                        <span>Changing subscription plan values only affects the template for newly created organizations. Existing organizations require manual updates or migration.</span>
+                    </div>
+
+                    <!-- Plan Parameters Section -->
+                    <div class="plan-section">
+                        <h2 class="section-title">Plan Parameters</h2>
+                        <div class="parameters-grid">
+                            <div class="parameter-card">
+                                <div class="parameter-header">
+                                    <i class="ph ph-file-text"></i>
+                                    <span class="parameter-label">Monthly base fee</span>
+                                    <button class="edit-btn" data-param="monthlyBaseFee">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                </div>
+                                <div class="parameter-value" id="monthlyBaseFeeValue">
+                                    <span class="value-amount">0</span>
+                                    <span class="currency-display" id="monthlyBaseFeeCurrencyDisplay">EUR</span>
+                                </div>
+                            </div>
+
+                            <div class="parameter-card">
+                                <div class="parameter-header">
+                                    <i class="ph ph-users"></i>
+                                    <span class="parameter-label">Max users</span>
+                                    <button class="edit-btn" data-param="maxUsers">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                </div>
+                                <div class="parameter-value" id="maxUsersValue">
+                                    <span class="value-amount">∞</span>
+                                </div>
+                            </div>
+
+                            <div class="parameter-card">
+                                <div class="parameter-header">
+                                    <i class="ph ph-users"></i>
+                                    <span class="parameter-label">Free users</span>
+                                    <button class="edit-btn" data-param="freeUsers">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                </div>
+                                <div class="parameter-value" id="freeUsersValue">
+                                    <span class="value-amount">∞</span>
+                                </div>
+                            </div>
+
+                            <div class="parameter-card">
+                                <div class="parameter-header">
+                                    <i class="ph ph-file-text"></i>
+                                    <span class="parameter-label">Monthly fee per user</span>
+                                    <button class="edit-btn" data-param="monthlyFeePerUser">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                </div>
+                                <div class="parameter-value" id="monthlyFeePerUserValue">
+                                    <span class="value-amount">0</span>
+                                    <span class="currency-display" id="monthlyFeePerUserCurrencyDisplay">EUR</span>
+                                </div>
+                            </div>
+
+                            <div class="parameter-card">
+                                <div class="parameter-header">
+                                    <i class="ph ph-credit-card"></i>
+                                    <span class="parameter-label">Max virtual cards</span>
+                                    <button class="edit-btn" data-param="maxVirtualCards">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                </div>
+                                <div class="parameter-value" id="maxVirtualCardsValue">
+                                    <span class="value-amount">∞</span>
+                                </div>
+                            </div>
+
+                            <div class="parameter-card">
+                                <div class="parameter-header">
+                                    <i class="ph ph-credit-card"></i>
+                                    <span class="parameter-label">Max single-use virtual cards/month</span>
+                                    <button class="edit-btn" data-param="maxSingleUseCards">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                </div>
+                                <div class="parameter-value" id="maxSingleUseCardsValue">
+                                    <span class="value-amount">∞</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Physical Card Fee Section -->
+                    <div class="plan-section">
+                        <h2 class="section-title">Premium Physical Card Fee</h2>
+                        <div class="parameters-grid">
+                            <div class="parameter-card">
+                                <div class="parameter-header">
+                                    <i class="ph ph-credit-card"></i>
+                                    <span class="parameter-label">Tier</span>
+                                    <button class="edit-btn" data-param="physicalCardTier">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                </div>
+                                <div class="parameter-value" id="physicalCardTierValue">
+                                    <span class="value-amount">0</span>
+                                    <span class="currency-display" id="physicalCardTierCurrencyDisplay">EUR</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enable Premium Modules Section -->
+                    <div class="plan-section">
+                        <div class="toggle-section">
+                            <div class="toggle-label-group">
+                                <span class="toggle-label">Enable premium modules</span>
+                            </div>
+                            <div class="toggle-switch" id="premiumModulesToggle">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Create Plan Modal -->
+    <div class="modal-overlay" id="createPlanModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Create New Subscription Plan</h2>
+                <button class="modal-close" id="closeCreateModal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newPlanName">Plan Name:</label>
+                    <input type="text" id="newPlanName" class="form-input" placeholder="Enter plan name">
+                </div>
+                <div class="form-group">
+                    <label>Create from:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="createFrom" value="blank" checked>
+                            <span>Blank plan</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="createFrom" value="copy">
+                            <span>Copy from existing plan</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group" id="copyFromGroup" style="display: none;">
+                    <label for="copyFromPlan">Copy from:</label>
+                    <select id="copyFromPlan" class="form-select">
+                        <option value="">Select a plan...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="setAsDefault">
+                        <span>Set as default plan</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelCreatePlan">Cancel</button>
+                <button class="btn-primary" id="confirmCreatePlan">Create Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply to Organizations Modal -->
+    <div class="modal-overlay" id="applyToOrgsModal" style="display: none;">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2>Apply configuration to existing organizations?</h2>
+                <button class="modal-close" id="closeApplyToOrgsModal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Description -->
+                <p class="modal-description">
+                    Choose whether to apply this configuration to all program organizations or only selected ones. 
+                    Use the list below to review and adjust your selection before continuing.
+                </p>
+
+                <!-- Warning Banner -->
+                <div class="warning-banner-orange">
+                    <i class="ph ph-warning"></i>
+                    <div>
+                        If this configuration is not applied to any existing organizations, no updates will be made to their current settings. 
+                        The configuration will only take effect for organizations created in the future under this payment program.
+                    </div>
+                </div>
+
+                <!-- Radio Buttons -->
+                <div class="radio-group-vertical">
+                    <label class="radio-label-large">
+                        <input type="radio" name="applyScope" value="all" id="applyToAllRadio" checked>
+                        <span>Apply to all organizations</span>
+                    </label>
+                    <label class="radio-label-large">
+                        <input type="radio" name="applyScope" value="specific" id="applyToSpecificRadio">
+                        <span>Apply to specific organizations</span>
+                    </label>
+                </div>
+
+                <!-- Search Field (for "Apply to all" mode) -->
+                <div class="org-search-field" id="searchFieldAll" style="display: block;">
+                    <div class="form-group">
+                        <label for="orgSearchInputAll">
+                            <i class="ph ph-magnifying-glass"></i>
+                        </label>
+                        <input type="text" id="orgSearchInputAll" class="form-input" placeholder="Search...">
+                    </div>
+                </div>
+
+                <!-- Select Organizations Field (for "Apply to specific" mode) -->
+                <div class="org-select-field" id="selectFieldSpecific" style="display: none;">
+                    <div class="form-group">
+                        <label for="orgSelectInput">Select organizations:</label>
+                        <div class="org-select-wrapper">
+                            <input type="text" id="orgSelectInput" class="form-input" placeholder="Type to search organizations..." autocomplete="off">
+                            <button class="add-to-list-btn" id="addToListBtn" style="display: none;">
+                                <i class="ph ph-plus"></i>
+                                Add to list
+                            </button>
+                            <div class="org-dropdown" id="orgDropdown" style="display: none;">
+                                <!-- Dropdown items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organizations Table -->
+                <div class="org-table-container">
+                    <table class="org-table" id="orgTable">
+                        <thead>
+                            <tr>
+                                <th>ORGANIZATION</th>
+                                <th>PAYMENT PROGRAM</th>
+                                <th>COUNTRY</th>
+                                <th>ACCT GROUPS</th>
+                                <th class="th-actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="orgTableBody">
+                            <!-- Organizations will be populated here -->
+                        </tbody>
+                    </table>
+                    <div class="org-table-empty" id="orgTableEmpty" style="display: none;">
+                        <p>No organizations selected. Use the field above to add organizations.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="doNotApplyBtn">Do not apply</button>
+                <button class="btn-primary" id="confirmApplyToOrgs">
+                    Apply
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Parameter Modal -->
+    <div class="modal-overlay" id="editParamModal" style="display: none;">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2 id="editParamTitle">Edit Parameter</h2>
+                <button class="modal-close" id="closeEditModal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label id="editParamLabel">Value:</label>
+                    <div class="input-group" id="editParamInputGroup">
+                        <input type="text" id="editParamValue" class="form-input" placeholder="Enter value">
+                        <select id="editParamCurrency" class="form-select" style="display: none;">
+                            <option value="">Select Currency</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="editParamCurrencyGroup" style="display: none; margin-top: 12px;">
+                        <label for="editParamCurrencyLabeled">
+                            <i class="ph ph-currency-circle-dollar"></i>
+                            Currency:
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="editParamCurrencyLabeled" class="form-select">
+                                <option value="" selected disabled>Select Currency</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="USD">USD - US Dollar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <small class="form-hint" id="editParamHint">Use ∞ for unlimited</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelEditParam">Cancel</button>
+                <button class="btn-primary" id="confirmEditParam">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="subscription-plans.js"></script>
+</body>
+</html>
