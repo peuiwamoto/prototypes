@@ -17,6 +17,7 @@ class CSVCustomizerV2 {
         this.loadConfiguration();
         // Store the initial state as saved state
         this.savedConfiguration = JSON.parse(JSON.stringify(this.configuration));
+        
         this.renderConfigurationTable();
         this.updateLastUpdatedDisplay();
         this.updateSaveButtonState();
@@ -29,43 +30,96 @@ class CSVCustomizerV2 {
             row1Header.style.display = shouldShow ? 'table-cell' : 'none';
             row2Header.style.display = shouldShow ? 'table-cell' : 'none';
         }
+        
+        // Check if configuration exists to show landing or config screen
+        const hasConfig = localStorage.getItem('csvConfiguration') !== null;
+        if (hasConfig) {
+            this.showLandingWithConfig();
+        } else {
+            this.showLandingEmpty();
+        }
     }
 
     setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
+        // Landing page buttons
+        const createConfigBtn = document.getElementById('createConfigBtn');
+        console.log('createConfigBtn found:', !!createConfigBtn);
+        if (createConfigBtn) {
+            createConfigBtn.addEventListener('click', (e) => {
+                console.log('Create button clicked - event:', e);
+                e.preventDefault();
+                console.log('About to call showStep(1)');
+                try {
+                    this.showStep(1);
+                    console.log('showStep(1) completed');
+                } catch (error) {
+                    console.error('Error in showStep:', error);
+                }
+            });
+        }
+
+        const editConfigBtn = document.getElementById('editConfigBtn');
+        console.log('editConfigBtn found:', !!editConfigBtn);
+        if (editConfigBtn) {
+            editConfigBtn.addEventListener('click', (e) => {
+                console.log('Edit button clicked');
+                e.preventDefault();
+                try {
+                    this.showStep(1);
+                } catch (error) {
+                    console.error('Error in showStep:', error);
+                }
+            });
+        }
+
         // Global 2-row toggle
-        document.getElementById('enableTwoRowLogic').addEventListener('change', (e) => {
-            this.configuration.twoRowLogicEnabled = e.target.checked;
-            this.onConfigurationChange();
-            this.renderConfigurationTable();
-            // Show/hide row column headers
-            const row1Header = document.getElementById('colRow1Header');
-            const row2Header = document.getElementById('colRow2Header');
-            if (row1Header && row2Header) {
-                row1Header.style.display = e.target.checked ? 'table-cell' : 'none';
-                row2Header.style.display = e.target.checked ? 'table-cell' : 'none';
-            }
-        });
+        const twoRowToggle = document.getElementById('enableTwoRowLogic');
+        if (twoRowToggle) {
+            twoRowToggle.addEventListener('change', (e) => {
+                this.configuration.twoRowLogicEnabled = e.target.checked;
+                this.onConfigurationChange();
+                this.renderConfigurationTable();
+                // Show/hide row column headers
+                const row1Header = document.getElementById('colRow1Header');
+                const row2Header = document.getElementById('colRow2Header');
+                if (row1Header && row2Header) {
+                    row1Header.style.display = e.target.checked ? 'table-cell' : 'none';
+                    row2Header.style.display = e.target.checked ? 'table-cell' : 'none';
+                }
+            });
+        }
 
         // Preview
-        document.getElementById('previewBtn').addEventListener('click', () => {
-            this.showPreview();
-        });
+        const previewBtn = document.getElementById('previewBtn');
+        if (previewBtn) {
+            previewBtn.addEventListener('click', () => {
+                this.showPreview();
+            });
+        }
 
         // Save
-        document.getElementById('saveConfigBtn').addEventListener('click', () => {
-            this.saveConfiguration();
-        });
+        const saveConfigBtn = document.getElementById('saveConfigBtn');
+        if (saveConfigBtn) {
+            saveConfigBtn.addEventListener('click', () => {
+                this.saveConfiguration();
+            });
+        }
 
         // Cancel
-        document.getElementById('cancelBtn').addEventListener('click', () => {
-            this.cancelChanges();
-        });
+        const cancelBtn = document.getElementById('cancelBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.cancelChanges();
+            });
+        }
 
         // Preview back button
         const backToConfigBtn = document.getElementById('backToConfigBtn');
         if (backToConfigBtn) {
             backToConfigBtn.addEventListener('click', () => {
-                this.showStep('step1');
+                this.showStep(1);
             });
         }
 
@@ -913,6 +967,74 @@ class CSVCustomizerV2 {
         }
     }
 
+    showStep(stepNumber) {
+        console.log('Showing step:', stepNumber);
+        const steps = document.querySelectorAll('.step-container');
+        console.log('Found step containers:', steps.length);
+        steps.forEach(step => {
+            console.log('Hiding step:', step.id);
+            step.classList.remove('active');
+            step.style.display = 'none';
+        });
+        const targetStep = document.getElementById(`step${stepNumber}`);
+        console.log('Target step element:', targetStep);
+        if (targetStep) {
+            targetStep.classList.add('active');
+            targetStep.style.display = 'block';
+            console.log('Step displayed:', stepNumber, 'Display:', targetStep.style.display);
+        } else {
+            console.error('Step not found:', stepNumber);
+        }
+    }
+
+    showLandingEmpty() {
+        document.getElementById('configCard').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+        this.showStep(0);
+    }
+
+    showLandingWithConfig() {
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('configCard').style.display = 'block';
+        
+        // Populate config card
+        const configMeta = document.getElementById('configCardMeta');
+        const configSummary = document.getElementById('configCardSummary');
+        
+        // Update meta information
+        const lastUpdated = this.configuration.lastUpdatedAt 
+            ? new Date(this.configuration.lastUpdatedAt).toLocaleString() 
+            : '—';
+        configMeta.textContent = `Last updated: ${lastUpdated}`;
+        
+        // Build summary
+        const columnCount = this.configuration.columns.length;
+        const twoRowEnabled = this.configuration.twoRowLogicEnabled ? 'Enabled' : 'Disabled';
+        const dateColumns = this.configuration.columns.filter(c => c.dataField === 'date').length;
+        const amountColumns = this.configuration.columns.filter(c => c.dataField === 'amount').length;
+        
+        configSummary.innerHTML = `
+            <div class="summary-item">
+                <span class="summary-label">Total Columns:</span>
+                <span class="summary-value">${columnCount}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Creditor Based Logic:</span>
+                <span class="summary-value">${twoRowEnabled}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Date Fields:</span>
+                <span class="summary-value">${dateColumns}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Amount Fields:</span>
+                <span class="summary-value">${amountColumns}</span>
+            </div>
+        `;
+        
+        this.showStep(0);
+    }
+
     saveConfiguration() {
         if (confirm('Changes will affect future exports. Are you sure you want to save?')) {
             this.configuration.lastUpdatedAt = new Date().toISOString();
@@ -928,6 +1050,9 @@ class CSVCustomizerV2 {
             
             // Update button states
             this.updateSaveButtonState();
+            
+            // Go back to landing page with config card
+            this.showLandingWithConfig();
             
             // Hide warning
             const warningMessage = document.getElementById('warningMessage');
@@ -958,7 +1083,7 @@ class CSVCustomizerV2 {
 
     showPreview() {
         this.generatePreview();
-        this.showStep('step3');
+        this.showStep(3);
     }
 
     generatePreview() {
@@ -1088,18 +1213,7 @@ class CSVCustomizerV2 {
         document.body.removeChild(link);
     }
 
-    showStep(step) {
-        // Hide all steps
-        document.querySelectorAll('.step-container').forEach(container => {
-            container.style.display = 'none';
-        });
-        
-        // Show requested step
-        const stepElement = document.getElementById(step);
-        if (stepElement) {
-            stepElement.style.display = 'block';
-        }
-    }
+    // Duplicate showStep removed - using the one defined earlier in the class
 
     generateSampleData() {
         return [

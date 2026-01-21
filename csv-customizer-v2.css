@@ -251,9 +251,7 @@ body {
 }
 
 /* Step Containers */
-.step-container {
-    max-width: 1200px;
-}
+/* Removed duplicate - see landing page section for step-container styles */
 
 
 /* Buttons - Following Design System and M3 */
@@ -838,6 +836,134 @@ body {
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Landing Page */
+.step-container {
+    display: none;
+    max-width: 1200px;
+}
+
+.step-container.active {
+    display: block !important;
+}
+
+.landing-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 24px;
+}
+
+.landing-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.landing-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.landing-icon i {
+    font-size: 56px;
+    color: #2563eb;
+}
+
+.landing-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 16px;
+}
+
+.landing-description {
+    font-size: 18px;
+    color: #666666;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Configuration Card */
+.config-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.config-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 24px;
+}
+
+.config-card-title-section {
+    flex: 1;
+}
+
+.config-card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111111;
+    margin-bottom: 4px;
+}
+
+.config-card-meta {
+    font-size: 14px;
+    color: #666666;
+}
+
+.config-card-body {
+    padding: 24px;
+}
+
+.config-card-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+}
+
+.summary-label {
+    font-size: 14px;
+    color: #666666;
+}
+
+.summary-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111111;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.btn-large {
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 /* Row Configuration */
