@@ -49,10 +49,12 @@ body {
 }
 
 .brand-logo {
-    display: block;
-    width: 120px;
-    height: 44px;
-    object-fit: contain;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #111111;
+    letter-spacing: -0.5px;
 }
 
 .sidebar-nav {
