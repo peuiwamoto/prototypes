@@ -259,6 +259,77 @@ body {
     cursor: grabbing;
 }
 
+.remove-widget-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 16px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.remove-widget-btn:hover {
+    background-color: #fee;
+    color: #d00;
+}
+
+.add-widget-container {
+    padding: 8px 16px;
+}
+
+.add-widget-btn {
+    width: 100%;
+    padding: 8px;
+    background-color: #f0f7ff;
+    border: 1px dashed #2563eb;
+    color: #2563eb;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.add-widget-btn:hover {
+    background-color: #e0e7f0;
+}
+
+.widget-selector-dropdown {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 300px;
+    overflow-y: auto;
+    min-width: 200px;
+}
+
+.widget-selector-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #333;
+}
+
+.widget-selector-item span {
+    color: #333;
+    font-weight: 500;
+}
+
+.widget-selector-item:hover {
+    background-color: #f9fafb;
+}
 
 .dropdown-divider {
     height: 1px;

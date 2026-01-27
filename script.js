@@ -1,10 +1,36 @@
+// Available widget pool - all possible widgets
+const availableWidgets = {
+    // Large widgets (can go in top or bottom section)
+    large: [
+        { id: 'account-balance', label: 'Account Balance', size: 'big' },
+        { id: 'my-tasks', label: 'My Tasks', size: 'big' },
+        { id: 'account-development', label: 'Account Development', size: 'big' },
+        { id: 'top-employees', label: 'Top Employees by Spend', size: 'big' },
+        { id: 'top-categories', label: 'Top Categories by Spend', size: 'big' },
+        { id: 'top-merchants', label: 'Top Merchants by Spend', size: 'big' },
+        { id: 'my-spend', label: 'My Spend', size: 'big' }
+    ],
+    // Small widgets (can only go in middle section)
+    small: [
+        { id: 'cashback', label: 'Cashback', size: 'small' },
+        { id: 'members', label: 'Members', size: 'small' },
+        { id: 'cards', label: 'Cards', size: 'small' },
+        { id: 'transaction-review', label: 'Transaction Review', size: 'small' },
+        { id: 'bank-transfers', label: 'Bank Transfers', size: 'small' },
+        { id: 'accounting', label: 'Accounting', size: 'small' }
+    ]
+};
+
+// Fixed widgets in top section (cannot be removed or moved)
+const fixedTopWidgets = ['account-balance', 'my-tasks'];
+
 // Dashboard Widget Configuration
 const widgetConfig = {
     // Big widgets section (top) - 2 per row, standalone fills full width
+    // Account Balance and My Tasks are fixed and cannot be removed
     bigTop: [
         { id: 'account-balance', label: 'Account Balance', section: 'bigTop', size: 'big' },
-        { id: 'my-tasks', label: 'My Tasks', section: 'bigTop', size: 'big' },
-        { id: 'account-development', label: 'Account Development', section: 'bigTop', size: 'big' }
+        { id: 'my-tasks', label: 'My Tasks', section: 'bigTop', size: 'big' }
     ],
     
     // Small widgets section - 3 per row, standalone stays 1/3 width
@@ -54,8 +80,7 @@ let widgetState = {
         bigTop: 'large',
         small: 'small',
         bigBottom: 'large'
-    },
-    arrangeMode: false // Track if arrange mode is active
+    }
 };
 
 // Initialize state from localStorage or defaults
@@ -109,13 +134,9 @@ function initializeState() {
             }
         });
     } else {
-        // Initialize all widgets as visible, except Account Development which should be hidden
+        // Initialize all widgets as visible
         [...widgetConfig.bigTop, ...widgetConfig.small, ...widgetConfig.bigBottom].forEach(widget => {
-            if (widget.id === 'account-development') {
-                widgetState.visible[widget.id] = false; // Initially hidden
-            } else {
-                widgetState.visible[widget.id] = true;
-            }
+            widgetState.visible[widget.id] = true;
         });
         // Initialize order for each section
         widgetConfig.bigTop.forEach((widget, index) => {
@@ -179,27 +200,6 @@ function initializeDashboard() {
     setupEventListeners();
     updateWidgetVisibility();
     
-    // Initialize arrange mode state
-    const container = document.querySelector('.dashboard-container');
-    if (widgetState.arrangeMode) {
-        const arrangeBtn = document.getElementById('arrangeBtn');
-        if (arrangeBtn) {
-            arrangeBtn.classList.add('active');
-        }
-        if (container) {
-            container.classList.add('arrange-mode');
-        }
-        document.querySelectorAll('.widget').forEach(widget => {
-            widget.draggable = true;
-        });
-    } else {
-        if (container) {
-            container.classList.remove('arrange-mode');
-        }
-        document.querySelectorAll('.widget').forEach(widget => {
-            widget.draggable = false;
-        });
-    }
 }
 
 // Render dashboard sections in order
@@ -482,13 +482,13 @@ function createWidgetElement(widget) {
     div.dataset.widgetId = widget.id;
     div.dataset.widgetSection = widget.section;
     div.dataset.widgetSize = widget.size;
-    div.draggable = widgetState.arrangeMode; // Only draggable when arrange mode is active
+    div.draggable = false; // Widgets are not draggable on the dashboard, only in Customize menu
     
     div.innerHTML = `
         <div class="widget-header">
             <h3>${widget.label}</h3>
             <div class="widget-header-actions">
-                <span class="widget-toggle" data-target="${widget.id}"><i class="ph ph-eye"></i></span>
+                <span class="widget-toggle" data-target="${widget.id}"><i class="ph ph-dots-three-vertical"></i></span>
             </div>
         </div>
         <div class="widget-content">
@@ -502,11 +502,7 @@ function createWidgetElement(widget) {
         </div>
     `;
     
-    // Add drag and drop handlers
-    div.addEventListener('dragstart', handleDragStart);
-    div.addEventListener('dragover', handleDragOver);
-    div.addEventListener('drop', handleDrop);
-    div.addEventListener('dragend', handleDragEnd);
+    // Widgets are not draggable on the dashboard - only in Customize menu
     
     return div;
 }
@@ -518,9 +514,16 @@ function renderCustomizeDropdown() {
     
     // Render sections in the order specified by sectionOrder
     widgetState.sectionOrder.forEach((sectionId, sectionIndex) => {
-        // Create section header
-        const sectionHeader = createSectionHeader(sectionId);
-        content.appendChild(sectionHeader);
+        const section = sectionConfig[sectionId];
+        const isLarge = (widgetState.sectionSizes[sectionId] || section.size) === 'large';
+        const isTopSection = sectionId === 'bigTop';
+        
+        // Add divider before section (except for first section)
+        if (sectionIndex > 0) {
+            const divider = document.createElement('div');
+            divider.className = 'dropdown-divider';
+            content.appendChild(divider);
+        }
         
         // Get widgets for this section
         const sectionWidgets = widgetConfig[sectionId] || [];
@@ -529,21 +532,17 @@ function renderCustomizeDropdown() {
             return (order[a.id] || 0) - (order[b.id] || 0);
         });
         
-        // Show all widgets in customize menu (removed section visibility filter)
+        // Show widgets with remove buttons (except fixed widgets in top section)
         sortedWidgets.forEach(widget => {
-            const item = createDropdownItem(widget);
+            const isFixed = isTopSection && fixedTopWidgets.includes(widget.id);
+            const item = createCustomizeWidgetItem(widget, sectionId, isFixed, isTopSection);
             content.appendChild(item);
         });
         
-        // Add divider after section (except for last section)
-        if (sectionIndex < widgetState.sectionOrder.length - 1) {
-            const divider = document.createElement('div');
-            divider.className = 'dropdown-divider';
-            content.appendChild(divider);
-        }
+        // Add "Add Widget" button
+        const addWidgetBtn = createAddWidgetButton(sectionId, isLarge);
+        content.appendChild(addWidgetBtn);
     });
-    
-    // Removed "Add Section" functionality
 }
 
 // Create "Add Section" button and form
@@ -813,44 +812,218 @@ function editSectionName(sectionId, headerElement) {
     });
 }
 
-// Create dropdown item
-function createDropdownItem(widget) {
+// Create customize widget item with remove button and drag handle
+function createCustomizeWidgetItem(widget, sectionId, isFixed, isTopSection = false) {
     const div = document.createElement('div');
     div.className = 'dropdown-item';
     div.dataset.widgetId = widget.id;
-    div.dataset.widgetSection = widget.section;
-    // Allow dragging for all widgets
-    div.draggable = true;
+    div.dataset.widgetSection = sectionId;
+    
+    // Only allow dragging if not in top section
+    if (!isTopSection) {
+        div.draggable = true;
+    }
     
     const isVisible = widgetState.visible[widget.id] !== false;
-    const isDraggable = true; // All widgets are draggable now
     
     div.innerHTML = `
         <div class="dropdown-item-content">
+            ${!isTopSection ? `<span class="dropdown-drag-handle" title="Drag to reorder"><i class="ph ph-list"></i></span>` : ''}
             <div class="dropdown-item-icon">${getWidgetIcon(widget.id)}</div>
             <span class="dropdown-item-label">${widget.label}</span>
         </div>
         <div class="dropdown-item-actions">
-            ${isDraggable ? `
-                <span class="dropdown-drag-handle" title="Drag to reorder"><i class="ph ph-list"></i></span>
+            ${!isFixed ? `
+                <button class="remove-widget-btn" data-widget-id="${widget.id}" data-section-id="${sectionId}" title="Remove widget">
+                    <i class="ph ph-x"></i>
+                </button>
             ` : ''}
-            <div class="toggle-switch ${isVisible ? 'active' : ''}" data-widget-id="${widget.id}"></div>
+            ${!isTopSection ? `<div class="toggle-switch ${isVisible ? 'active' : ''}" data-widget-id="${widget.id}"></div>` : ''}
         </div>
     `;
     
-    // Add toggle switch handler
-    div.querySelector('.toggle-switch').addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleWidgetVisibility(widget.id);
-    });
+    // Add toggle switch handler (only if not top section)
+    if (!isTopSection) {
+        const toggleSwitch = div.querySelector('.toggle-switch');
+        if (toggleSwitch) {
+            toggleSwitch.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleWidgetVisibility(widget.id);
+            });
+        }
+    }
     
-    // Add drag handlers for all widgets (all are draggable now)
-    div.addEventListener('dragstart', handleDropdownDragStart);
-    div.addEventListener('dragover', handleDropdownDragOver);
-    div.addEventListener('drop', handleDropdownDrop);
-    div.addEventListener('dragend', handleDropdownDragEnd);
+    // Add remove button handler (if not fixed)
+    if (!isFixed) {
+        const removeBtn = div.querySelector('.remove-widget-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeWidgetFromSection(widget.id, sectionId);
+            });
+        }
+    }
+    
+    // Add drag handlers for reordering within sections (only if not top section)
+    if (!isTopSection) {
+        div.addEventListener('dragstart', handleDropdownDragStart);
+        div.addEventListener('dragover', handleDropdownDragOver);
+        div.addEventListener('drop', handleDropdownDrop);
+        div.addEventListener('dragend', handleDropdownDragEnd);
+    }
     
     return div;
+}
+
+// Create "Add Widget" button with dropdown
+function createAddWidgetButton(sectionId, isLarge) {
+    const container = document.createElement('div');
+    container.className = 'add-widget-container';
+    
+    const button = document.createElement('button');
+    button.className = 'add-widget-btn';
+    button.innerHTML = '<i class="ph ph-plus"></i> Add Widget';
+    button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showAddWidgetDropdown(button, sectionId, isLarge);
+    });
+    
+    container.appendChild(button);
+    return container;
+}
+
+// Show dropdown for adding widgets
+function showAddWidgetDropdown(button, sectionId, isLarge) {
+    // Remove existing dropdown if any
+    const existingDropdown = document.querySelector('.widget-selector-dropdown');
+    if (existingDropdown) {
+        existingDropdown.remove();
+    }
+    
+    // Get available widgets for this section
+    const availablePool = isLarge ? availableWidgets.large : availableWidgets.small;
+    const currentWidgets = (widgetConfig[sectionId] || []).map(w => w.id);
+    
+    // Filter out widgets already in this section
+    let filteredWidgets = availablePool.filter(w => !currentWidgets.includes(w.id));
+    
+    // If bottom section, prevent adding fixed top widgets (Account Balance, My Tasks)
+    if (sectionId === 'bigBottom') {
+        filteredWidgets = filteredWidgets.filter(w => !fixedTopWidgets.includes(w.id));
+    }
+    
+    // If top section, only allow adding non-fixed large widgets
+    if (sectionId === 'bigTop') {
+        filteredWidgets = filteredWidgets.filter(w => !fixedTopWidgets.includes(w.id));
+    }
+    
+    if (filteredWidgets.length === 0) {
+        alert('No available widgets to add');
+        return;
+    }
+    
+    // Create dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'widget-selector-dropdown';
+    dropdown.innerHTML = filteredWidgets.map(widget => `
+        <div class="widget-selector-item" data-widget-id="${widget.id}">
+            <div class="dropdown-item-icon">${getWidgetIcon(widget.id)}</div>
+            <span>${widget.label}</span>
+        </div>
+    `).join('');
+    
+    // Position dropdown
+    const rect = button.getBoundingClientRect();
+    dropdown.style.position = 'fixed';
+    dropdown.style.top = `${rect.bottom + 5}px`;
+    dropdown.style.left = `${rect.left}px`;
+    dropdown.style.zIndex = '10000';
+    
+    document.body.appendChild(dropdown);
+    
+    // Add click handlers
+    dropdown.querySelectorAll('.widget-selector-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const widgetId = item.dataset.widgetId;
+            addWidgetToSection(widgetId, sectionId, isLarge);
+            dropdown.remove();
+        });
+    });
+    
+    // Close dropdown when clicking outside
+    setTimeout(() => {
+        const closeHandler = (e) => {
+            if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+                dropdown.remove();
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        document.addEventListener('click', closeHandler);
+    }, 0);
+}
+
+// Add widget to section
+function addWidgetToSection(widgetId, sectionId, isLarge) {
+    // Find widget in pool
+    const pool = isLarge ? availableWidgets.large : availableWidgets.small;
+    const widgetTemplate = pool.find(w => w.id === widgetId);
+    
+    if (!widgetTemplate) return;
+    
+    // Create widget object
+    const widget = {
+        id: widgetTemplate.id,
+        label: widgetTemplate.label,
+        section: sectionId,
+        size: isLarge ? 'big' : 'small'
+    };
+    
+    // Add to section
+    if (!widgetConfig[sectionId]) {
+        widgetConfig[sectionId] = [];
+    }
+    widgetConfig[sectionId].push(widget);
+    
+    // Initialize visibility and order
+    if (widgetState.visible[widgetId] === undefined) {
+        widgetState.visible[widgetId] = true;
+    }
+    widgetState.order[sectionId] = widgetState.order[sectionId] || {};
+    widgetState.order[sectionId][widgetId] = widgetConfig[sectionId].length - 1;
+    
+    saveState();
+    renderDashboardSections();
+    renderCustomizeDropdown();
+}
+
+// Remove widget from section
+function removeWidgetFromSection(widgetId, sectionId) {
+    const sectionArray = widgetConfig[sectionId];
+    if (!sectionArray) return;
+    
+    // Don't allow removing fixed widgets
+    if (sectionId === 'bigTop' && fixedTopWidgets.includes(widgetId)) {
+        return;
+    }
+    
+    const index = sectionArray.findIndex(w => w.id === widgetId);
+    if (index === -1) return;
+    
+    sectionArray.splice(index, 1);
+    
+    // Update order
+    widgetState.order[sectionId] = widgetState.order[sectionId] || {};
+    delete widgetState.order[sectionId][widgetId];
+    
+    // Recalculate order
+    sectionArray.forEach((widget, idx) => {
+        widgetState.order[sectionId][widget.id] = idx;
+    });
+    
+    saveState();
+    renderDashboardSections();
+    renderCustomizeDropdown();
 }
 
 // Get icon for widget
@@ -914,18 +1087,15 @@ function handleDropdownDrop(e) {
         const draggedSection = draggedDropdownItem.dataset.widgetSection;
         const targetSection = targetItem.dataset.widgetSection;
         
-        // Allow reordering within the same section, or moving between any sections
+        // Only allow reordering within the same section (no cross-section moves)
         if (draggedSection === targetSection) {
             // Reorder within same section
             reorderWidgetsInSection(draggedId, targetId, draggedSection);
-        } else {
-            // Move widget between sections
-            moveWidgetBetweenSections(draggedId, draggedSection, targetSection, targetId);
+            saveState();
+            renderDashboardSections();
+            renderCustomizeDropdown();
         }
-        
-        saveState();
-        renderDashboardSections();
-        renderCustomizeDropdown();
+        // Note: Moving widgets between sections is now done via add/remove buttons only
     }
     
     // Reset styles
@@ -1359,15 +1529,6 @@ function handleDragEnd(e) {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Arrange button
-    const arrangeBtn = document.getElementById('arrangeBtn');
-    if (arrangeBtn) {
-        arrangeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleArrangeMode();
-        });
-    }
-    
     // Customize button
     const customizeBtn = document.getElementById('customizeBtn');
     const customizeDropdown = document.getElementById('customizeDropdown');
