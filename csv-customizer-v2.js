@@ -41,35 +41,32 @@ class CSVCustomizerV2 {
     }
 
     setupEventListeners() {
-        console.log('Setting up event listeners...');
-        
         // Landing page buttons
         const createConfigBtn = document.getElementById('createConfigBtn');
-        console.log('createConfigBtn found:', !!createConfigBtn);
         if (createConfigBtn) {
             createConfigBtn.addEventListener('click', (e) => {
-                console.log('Create button clicked - event:', e);
                 e.preventDefault();
-                console.log('About to call showStep(1)');
-                try {
-                    this.showStep(1);
-                    console.log('showStep(1) completed');
-                } catch (error) {
-                    console.error('Error in showStep:', error);
-                }
+                this.showStep(1);
             });
         }
 
         const editConfigBtn = document.getElementById('editConfigBtn');
-        console.log('editConfigBtn found:', !!editConfigBtn);
         if (editConfigBtn) {
             editConfigBtn.addEventListener('click', (e) => {
-                console.log('Edit button clicked');
                 e.preventDefault();
-                try {
-                    this.showStep(1);
-                } catch (error) {
-                    console.error('Error in showStep:', error);
+                this.showStep(1);
+            });
+        }
+
+        // Config screen back button
+        const configBackBtn = document.getElementById('configBackBtn');
+        if (configBackBtn) {
+            configBackBtn.addEventListener('click', () => {
+                const hasConfig = localStorage.getItem('csvConfiguration') !== null;
+                if (hasConfig) {
+                    this.showLandingWithConfig();
+                } else {
+                    this.showLandingEmpty();
                 }
             });
         }
@@ -156,6 +153,19 @@ class CSVCustomizerV2 {
                 ...this.configuration,
                 ...saved
             };
+            // Migrate old _constant data fields to single field + isConstant
+            this.configuration.columns.forEach(col => {
+                if (col.dataField === 'code_journal_constant') {
+                    col.dataField = 'code_journal';
+                    col.isConstant = true;
+                } else if (col.dataField === 'account_number_constant') {
+                    col.dataField = 'supplier_account_number';
+                    col.isConstant = true;
+                } else if (col.dataField === 'cost_center_constant') {
+                    col.dataField = 'cost_center';
+                    col.isConstant = true;
+                }
+            });
             // Set the toggle state
             const toggle = document.getElementById('enableTwoRowLogic');
             if (toggle) {
@@ -173,57 +183,16 @@ class CSVCustomizerV2 {
             {
                 id: 'col1',
                 order: 0,
-                header: 'Transaction ID',
-                dataField: 'transaction_id',
-                formatting: 'text',
-                visible: true,
-                splitEnabled: false,
-                debitValue: '',
-                creditValue: '',
-                isAmountField: false,
-                splitIntoColumns: false,
-                splitIntoRows: false,
-                row1Mode: 'same',
-                row1Value: '',
-                row2Mode: 'same',
-                row2Value: '',
-                dateFormat: 'YYYY-MM-DD',
-                amountSign: 'as-is',
-                decimalSeparator: 'dot',
-                thousandSeparator: 'comma',
-                showCurrency: false,
-                currencySymbol: 'EUR'
-            },
-            {
-                id: 'col2',
-                order: 1,
                 header: 'Date',
-                dataField: 'date',
+                dataField: 'transaction_date',
                 formatting: 'date',
                 visible: true,
                 splitEnabled: false,
                 debitValue: '',
                 creditValue: '',
                 isAmountField: false,
-                splitIntoColumns: false,
-                splitIntoRows: false,
-                row1Mode: 'same',
-                row1Value: '',
-                row2Mode: 'same',
-                row2Value: '',
-                dateFormat: 'YYYY-MM-DD'
-            },
-            {
-                id: 'col3',
-                order: 2,
-                header: 'Merchant',
-                dataField: 'merchant',
-                formatting: 'text',
-                visible: true,
-                splitEnabled: false,
-                debitValue: '',
-                creditValue: '',
-                isAmountField: false,
+                isConstant: false,
+                constantValue: '',
                 splitIntoColumns: false,
                 splitIntoRows: false,
                 row1Mode: 'same',
@@ -235,19 +204,163 @@ class CSVCustomizerV2 {
                 decimalSeparator: 'dot',
                 thousandSeparator: 'comma',
                 showCurrency: false,
-                currencySymbol: 'EUR'
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
+            },
+            {
+                id: 'col2',
+                order: 1,
+                header: 'Code Journal',
+                dataField: 'code_journal',
+                formatting: 'text',
+                visible: true,
+                splitEnabled: false,
+                debitValue: '',
+                creditValue: '',
+                isAmountField: false,
+                isConstant: true,
+                constantValue: 'BQ_PLIANT',
+                splitIntoColumns: false,
+                splitIntoRows: false,
+                row1Mode: 'same',
+                row1Value: '',
+                row2Mode: 'same',
+                row2Value: '',
+                dateFormat: 'YYYY-MM-DD',
+                amountSign: 'as-is',
+                decimalSeparator: 'dot',
+                thousandSeparator: 'comma',
+                showCurrency: false,
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
+            },
+            {
+                id: 'col3',
+                order: 2,
+                header: 'Piece',
+                dataField: 'piece',
+                formatting: 'text',
+                visible: true,
+                splitEnabled: false,
+                debitValue: '',
+                creditValue: '',
+                isAmountField: false,
+                isConstant: false,
+                constantValue: '',
+                splitIntoColumns: false,
+                splitIntoRows: false,
+                row1Mode: 'same',
+                row1Value: '',
+                row2Mode: 'same',
+                row2Value: '',
+                dateFormat: 'YYYY-MM-DD',
+                amountSign: 'as-is',
+                decimalSeparator: 'dot',
+                thousandSeparator: 'comma',
+                showCurrency: false,
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
             },
             {
                 id: 'col4',
                 order: 3,
-                header: 'Amount',
-                dataField: 'amount',
+                header: 'REF',
+                dataField: 'ref',
+                formatting: 'text',
+                visible: true,
+                splitEnabled: false,
+                debitValue: '',
+                creditValue: '',
+                isAmountField: false,
+                isConstant: false,
+                constantValue: '',
+                splitIntoColumns: false,
+                splitIntoRows: false,
+                row1Mode: 'same',
+                row1Value: '',
+                row2Mode: 'same',
+                row2Value: '',
+                dateFormat: 'YYYY-MM-DD',
+                amountSign: 'as-is',
+                decimalSeparator: 'dot',
+                thousandSeparator: 'comma',
+                showCurrency: false,
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
+            },
+            {
+                id: 'col5',
+                order: 4,
+                header: 'Numero de Compte',
+                dataField: 'supplier_account_number',
+                formatting: 'text',
+                visible: true,
+                splitEnabled: false,
+                debitValue: '',
+                creditValue: '',
+                isAmountField: false,
+                isConstant: false,
+                constantValue: '',
+                splitIntoColumns: false,
+                splitIntoRows: false,
+                row1Mode: 'same',
+                row1Value: '',
+                row2Mode: 'same',
+                row2Value: '',
+                dateFormat: 'YYYY-MM-DD',
+                amountSign: 'as-is',
+                decimalSeparator: 'dot',
+                thousandSeparator: 'comma',
+                showCurrency: false,
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
+            },
+            {
+                id: 'col6',
+                order: 5,
+                header: 'Libelle',
+                dataField: 'comment',
+                formatting: 'text',
+                visible: true,
+                splitEnabled: false,
+                debitValue: '',
+                creditValue: '',
+                isAmountField: false,
+                isConstant: false,
+                constantValue: '',
+                splitIntoColumns: false,
+                splitIntoRows: false,
+                row1Mode: 'same',
+                row1Value: '',
+                row2Mode: 'same',
+                row2Value: '',
+                dateFormat: 'YYYY-MM-DD',
+                amountSign: 'as-is',
+                decimalSeparator: 'dot',
+                thousandSeparator: 'comma',
+                showCurrency: false,
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
+            },
+            {
+                id: 'col7',
+                order: 6,
+                header: 'Debit',
+                dataField: 'debit',
                 formatting: 'number',
                 visible: true,
                 splitEnabled: false,
                 debitValue: '',
                 creditValue: '',
                 isAmountField: true,
+                isConstant: false,
+                constantValue: '',
                 splitIntoColumns: false,
                 splitIntoRows: false,
                 row1Mode: 'amount',
@@ -258,6 +371,41 @@ class CSVCustomizerV2 {
                 creditRow1Value: '',
                 creditRow2Mode: 'blank',
                 creditRow2Value: '',
+                debitRow1Mode: 'amount',
+                debitRow1Value: '',
+                debitRow2Mode: 'blank',
+                debitRow2Value: '',
+                amountSign: 'as-is',
+                decimalSeparator: 'dot',
+                thousandSeparator: 'comma',
+                showCurrency: false,
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
+            },
+            {
+                id: 'col8',
+                order: 7,
+                header: 'Credit',
+                dataField: 'credit',
+                formatting: 'number',
+                visible: true,
+                splitEnabled: false,
+                debitValue: '',
+                creditValue: '',
+                isAmountField: true,
+                isConstant: false,
+                constantValue: '',
+                splitIntoColumns: false,
+                splitIntoRows: false,
+                row1Mode: 'blank',
+                row1Value: '',
+                row2Mode: 'amount',
+                row2Value: '',
+                creditRow1Mode: 'blank',
+                creditRow1Value: '',
+                creditRow2Mode: 'amount',
+                creditRow2Value: '',
                 debitRow1Mode: 'blank',
                 debitRow1Value: '',
                 debitRow2Mode: 'amount',
@@ -266,19 +414,23 @@ class CSVCustomizerV2 {
                 decimalSeparator: 'dot',
                 thousandSeparator: 'comma',
                 showCurrency: false,
-                currencySymbol: 'EUR'
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
             },
             {
-                id: 'col5',
-                order: 4,
-                header: 'Currency',
-                dataField: 'currency',
+                id: 'col9',
+                order: 8,
+                header: 'Code Section',
+                dataField: 'cost_center',
                 formatting: 'text',
                 visible: true,
                 splitEnabled: false,
                 debitValue: '',
                 creditValue: '',
                 isAmountField: false,
+                isConstant: false,
+                constantValue: '',
                 splitIntoColumns: false,
                 splitIntoRows: false,
                 row1Mode: 'same',
@@ -290,56 +442,10 @@ class CSVCustomizerV2 {
                 decimalSeparator: 'dot',
                 thousandSeparator: 'comma',
                 showCurrency: false,
-                currencySymbol: 'EUR'
+                currencySymbol: 'EUR',
+                caseFormat: 'original',
+                maxLength: null
             },
-            {
-                id: 'col6',
-                order: 5,
-                header: 'Category',
-                dataField: 'category',
-                formatting: 'text',
-                visible: true,
-                splitEnabled: false,
-                debitValue: '',
-                creditValue: '',
-                isAmountField: false,
-                splitIntoColumns: false,
-                splitIntoRows: false,
-                row1Mode: 'same',
-                row1Value: '',
-                row2Mode: 'same',
-                row2Value: '',
-                dateFormat: 'YYYY-MM-DD',
-                amountSign: 'as-is',
-                decimalSeparator: 'dot',
-                thousandSeparator: 'comma',
-                showCurrency: false,
-                currencySymbol: 'EUR'
-            },
-            {
-                id: 'col7',
-                order: 6,
-                header: 'Notes',
-                dataField: 'notes',
-                formatting: 'text',
-                visible: true,
-                splitEnabled: false,
-                debitValue: '',
-                creditValue: '',
-                isAmountField: false,
-                splitIntoColumns: false,
-                splitIntoRows: false,
-                row1Mode: 'same',
-                row1Value: '',
-                row2Mode: 'same',
-                row2Value: '',
-                dateFormat: 'YYYY-MM-DD',
-                amountSign: 'as-is',
-                decimalSeparator: 'dot',
-                thousandSeparator: 'comma',
-                showCurrency: false,
-                currencySymbol: 'EUR'
-            }
         ];
     }
 
@@ -409,7 +515,28 @@ class CSVCustomizerV2 {
                 </select>
             </td>
             <td class="col-sample">
-                <span class="sample-value">${this.getSampleValue(column)}</span>
+                <div class="sample-value-cell">
+                    ${column.isConstant ? `
+                        <input 
+                            type="text" 
+                            class="table-input constant-value-input" 
+                            placeholder="Enter constant value"
+                            value="${column.constantValue || ''}"
+                            data-column-id="${column.id}"
+                        />
+                    ` : `
+                        <span class="sample-value">${this.getSampleValue(column)}</span>
+                    `}
+                    <label class="constant-toggle-label" title="Use constant value">
+                        <input 
+                            type="checkbox" 
+                            class="constant-toggle" 
+                            data-column-id="${column.id}"
+                            ${column.isConstant ? 'checked' : ''}
+                        />
+                        <span class="constant-toggle-text">Constant</span>
+                    </label>
+                </div>
             </td>
             <td class="col-format">
                 <button class="format-btn" data-column-id="${column.id}" title="Configure formatting" ${this.shouldDisableFormatButton(column, amountRowType) ? 'disabled' : ''}>
@@ -472,13 +599,33 @@ class CSVCustomizerV2 {
         const dataFieldSelect = tr.querySelector('select[data-field="dataField"]');
         dataFieldSelect.addEventListener('change', (e) => {
             column.dataField = e.target.value;
-            // Update isAmountField flag
-            column.isAmountField = e.target.value === 'amount';
+            // Update amount field flag only (constant is controlled by toggle)
+            column.isAmountField = e.target.value === 'amount' || e.target.value === 'debit' || e.target.value === 'credit';
             this.onConfigurationChange();
             this.updateSampleValue(column.id);
-            // Re-render to show/hide behavior button and inputs
+            // Re-render to show/hide behavior button and row config
             this.renderConfigurationTable();
         });
+
+        // Constant toggle
+        const constantToggle = tr.querySelector('.constant-toggle');
+        if (constantToggle) {
+            constantToggle.addEventListener('change', (e) => {
+                column.isConstant = e.target.checked;
+                this.onConfigurationChange();
+                // Re-render to show sample value vs constant input
+                this.renderConfigurationTable();
+            });
+        }
+
+        // Constant value input
+        const constantInput = tr.querySelector('.constant-value-input');
+        if (constantInput) {
+            constantInput.addEventListener('change', (e) => {
+                column.constantValue = e.target.value;
+                this.onConfigurationChange();
+            });
+        }
 
         const formatBtn = tr.querySelector('.format-btn');
         if (formatBtn && !formatBtn.disabled) {
@@ -541,35 +688,159 @@ class CSVCustomizerV2 {
     }
 
     getDataFieldOptions(selectedValue) {
-        const fields = [
-            { value: 'transaction_id', label: 'Transaction ID' },
-            { value: 'date', label: 'Date' },
-            { value: 'merchant', label: 'Merchant' },
-            { value: 'amount', label: 'Amount' },
-            { value: 'currency', label: 'Currency' },
-            { value: 'category', label: 'Category' },
-            { value: 'notes', label: 'Notes' },
-            { value: 'account', label: 'Account' },
-            { value: 'card_number', label: 'Card Number' },
-            { value: 'reference', label: 'Reference' }
+        const categories = [
+            {
+                label: 'Date',
+                fields: [
+                    { value: 'transaction_date', label: 'Transaction Date' },
+                    { value: 'booking_date', label: 'Booking Date' },
+                    { value: 'receipt_date', label: 'Receipt Date' }
+                ]
+            },
+            {
+                label: 'Transaction',
+                fields: [
+                    { value: 'comment', label: 'LIBELLE (Comment)' },
+                    { value: 'amount', label: 'Amount' },
+                    { value: 'debit', label: 'Debit' },
+                    { value: 'credit', label: 'Credit' }
+                ]
+            },
+            {
+                label: 'Metadata',
+                fields: [
+                    { value: 'code_journal', label: 'Code Journal' }
+                ]
+            },
+            {
+                label: 'Accounting',
+                fields: [
+                    { value: 'supplier_account_number', label: 'Supplier Account Number' },
+                    { value: 'card_account_number', label: 'Card Account Number' },
+                    { value: 'cost_center', label: 'Code Section (Cost Center)' }
+                ]
+            },
+            {
+                label: 'Receipt',
+                fields: [
+                    { value: 'piece', label: 'Piece (Receipt Number)' },
+                    { value: 'ref', label: 'REF (Receipt Number)' }
+                ]
+            },
+            {
+                label: 'FX & Currency',
+                fields: []
+            }
         ];
 
-        return fields.map(field => 
-            `<option value="${field.value}" ${field.value === selectedValue ? 'selected' : ''}>${field.label}</option>`
-        ).join('');
+        return categories.map(cat => {
+            const options = cat.fields.map(field =>
+                `<option value="${field.value}" ${field.value === selectedValue ? 'selected' : ''}>${field.label}</option>`
+            ).join('');
+            const placeholder = cat.fields.length === 0 ? '<option disabled>—</option>' : '';
+            return `<optgroup label="${cat.label}">${options}${placeholder}</optgroup>`;
+        }).join('');
     }
 
     getSampleValue(column) {
+        // If constant field, show constant value
+        if (column.isConstant) {
+            return column.constantValue || '—';
+        }
+
         const sample = this.sampleData[0];
         let value = sample[column.dataField] || '';
 
-        if (column.formatting === 'date' && value) {
-            value = new Date(value).toLocaleDateString('en-US');
-        } else if (column.formatting === 'number' && value) {
-            value = typeof value === 'number' ? value.toFixed(2) : value;
+        // Handle date fields
+        if ((column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date') && value) {
+            if (column.dateFormat) {
+                value = this.formatDateValue(value, column.dateFormat);
+            } else {
+                value = new Date(value).toLocaleDateString('en-US');
+            }
+        } 
+        // Handle amount fields (debit/credit)
+        else if ((column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit') && value) {
+            value = this.formatAmountValue(value, column);
+        }
+        // Handle comment field with case formatting
+        else if (column.dataField === 'comment' && value) {
+            value = this.formatTextValue(value, column);
         }
 
         return value || '—';
+    }
+
+    formatDateValue(dateValue, format) {
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) return dateValue;
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return format
+            .replace('YYYY', year)
+            .replace('MM', month)
+            .replace('DD', day)
+            .replace('HH', hours)
+            .replace('mm', minutes)
+            .replace('ss', seconds);
+    }
+
+    formatAmountValue(amount, column) {
+        let value = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+        
+        // Apply sign
+        if (column.amountSign === 'plus' && value < 0) value = Math.abs(value);
+        if (column.amountSign === 'minus' && value > 0) value = -Math.abs(value);
+        if (column.amountSign === 'absolute') value = Math.abs(value);
+
+        // Format number
+        const parts = value.toFixed(2).split('.');
+        let integerPart = parts[0];
+        const decimalPart = parts[1];
+
+        // Apply thousand separator
+        if (column.thousandSeparator === 'comma') {
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        } else if (column.thousandSeparator === 'period') {
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        } else if (column.thousandSeparator === 'space') {
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        // Apply decimal separator
+        const decimalSep = column.decimalSeparator === 'comma' ? ',' : '.';
+        let formatted = integerPart + decimalSep + decimalPart;
+
+        // Apply currency
+        if (column.showCurrency) {
+            formatted = column.currencySymbol + ' ' + formatted;
+        }
+
+        return formatted;
+    }
+
+    formatTextValue(text, column) {
+        let value = String(text);
+        
+        // Apply case formatting
+        if (column.caseFormat === 'upper') {
+            value = value.toUpperCase();
+        } else if (column.caseFormat === 'lower') {
+            value = value.toLowerCase();
+        }
+
+        // Apply max length
+        if (column.maxLength && value.length > column.maxLength) {
+            value = value.substring(0, column.maxLength);
+        }
+
+        return value;
     }
 
     updateSampleValue(columnId) {
@@ -644,14 +915,18 @@ class CSVCustomizerV2 {
 
     shouldDisableFormatButton(column, amountRowType = null) {
         // Enable for Date fields
-        if (column.dataField === 'date') {
+        if (column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date') {
             return false;
         }
-        // Enable for Amount field (including Credit/Debit rows when split)
-        if (column.dataField === 'amount') {
+        // Enable for Amount fields (Amount, Debit, Credit)
+        if (column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit') {
             return false;
         }
-        // Disable for all other fields
+        // Enable for LIBELLE (Comment) - has case and max length options
+        if (column.dataField === 'comment') {
+            return false;
+        }
+        // Disable for all other fields (including constants)
         return true;
     }
 
@@ -660,13 +935,15 @@ class CSVCustomizerV2 {
             id: 'col' + Date.now(),
             order: this.configuration.columns.length,
             header: 'New Column',
-            dataField: 'transaction_id',
+            dataField: 'transaction_date',
             formatting: 'text',
             visible: true,
             splitEnabled: false,
             debitValue: '',
             creditValue: '',
             isAmountField: false,
+            isConstant: false,
+            constantValue: '',
             splitIntoColumns: false,
             splitIntoRows: false,
             row1Mode: 'same',
@@ -686,7 +963,9 @@ class CSVCustomizerV2 {
             decimalSeparator: 'dot',
             thousandSeparator: 'comma',
             showCurrency: false,
-            currencySymbol: 'EUR'
+            currencySymbol: 'EUR',
+            caseFormat: 'original',
+            maxLength: null
         };
         this.configuration.columns.push(newColumn);
         this.onConfigurationChange();
@@ -752,24 +1031,32 @@ class CSVCustomizerV2 {
         const modalTitle = document.getElementById('formattingModalTitle');
         const dateOptions = document.getElementById('dateFormattingOptions');
         const amountOptions = document.getElementById('amountFormattingOptions');
+        const libelleOptions = document.getElementById('libelleFormattingOptions');
         
         // Store current column
         this.currentFormattingColumn = column;
         
+        // Hide all options first
+        dateOptions.style.display = 'none';
+        amountOptions.style.display = 'none';
+        libelleOptions.style.display = 'none';
+        
         // Show appropriate options based on field type
-        if (column.dataField === 'date') {
+        const isDateField = column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date';
+        const isAmountField = column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit';
+        const isLibelleField = column.dataField === 'comment';
+        
+        if (isDateField) {
             modalTitle.textContent = 'Configure Date Formatting';
             dateOptions.style.display = 'block';
-            amountOptions.style.display = 'none';
             
             // Set current date format
             const dateFormatRadios = modalOverlay.querySelectorAll('input[name="dateFormat"]');
             dateFormatRadios.forEach(radio => {
                 radio.checked = radio.value === (column.dateFormat || 'YYYY-MM-DD');
             });
-        } else if (column.dataField === 'amount') {
+        } else if (isAmountField) {
             modalTitle.textContent = 'Configure Amount Formatting';
-            dateOptions.style.display = 'none';
             amountOptions.style.display = 'block';
             
             // Set current amount formatting options
@@ -800,6 +1087,32 @@ class CSVCustomizerV2 {
             showCurrencyToggle.onchange = (e) => {
                 currencySymbolField.style.display = e.target.checked ? 'block' : 'none';
             };
+        } else if (isLibelleField) {
+            modalTitle.textContent = 'Configure LIBELLE Formatting';
+            libelleOptions.style.display = 'block';
+            
+            // Set current case format
+            const caseRadios = modalOverlay.querySelectorAll('input[name="caseFormat"]');
+            caseRadios.forEach(radio => {
+                radio.checked = radio.value === (column.caseFormat || 'original');
+            });
+            
+            // Set max length
+            const enableMaxLength = document.getElementById('enableMaxLength');
+            const maxLengthField = document.getElementById('maxLengthField');
+            const maxLengthInput = document.getElementById('maxLengthInput');
+            
+            enableMaxLength.checked = column.maxLength !== null && column.maxLength !== undefined;
+            maxLengthField.style.display = enableMaxLength.checked ? 'block' : 'none';
+            maxLengthInput.value = column.maxLength || '';
+            
+            // Toggle max length field visibility
+            enableMaxLength.onchange = (e) => {
+                maxLengthField.style.display = e.target.checked ? 'block' : 'none';
+                if (!e.target.checked) {
+                    maxLengthInput.value = '';
+                }
+            };
         }
         
         // Show modal
@@ -815,12 +1128,16 @@ class CSVCustomizerV2 {
         };
         
         const saveFormatting = () => {
-            if (column.dataField === 'date') {
+            const isDateField = column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date';
+            const isAmountField = column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit';
+            const isLibelleField = column.dataField === 'comment';
+            
+            if (isDateField) {
                 const selectedDateFormat = modalOverlay.querySelector('input[name="dateFormat"]:checked');
                 if (selectedDateFormat) {
                     column.dateFormat = selectedDateFormat.value;
                 }
-            } else if (column.dataField === 'amount') {
+            } else if (isAmountField) {
                 const selectedSign = modalOverlay.querySelector('input[name="amountSign"]:checked');
                 const selectedDecimal = modalOverlay.querySelector('input[name="decimalSeparator"]:checked');
                 const selectedThousand = modalOverlay.querySelector('input[name="thousandSeparator"]:checked');
@@ -832,6 +1149,17 @@ class CSVCustomizerV2 {
                 if (selectedThousand) column.thousandSeparator = selectedThousand.value;
                 column.showCurrency = showCurrencyToggle.checked;
                 column.currencySymbol = currencySymbolInput.value || 'EUR';
+            } else if (isLibelleField) {
+                const selectedCase = modalOverlay.querySelector('input[name="caseFormat"]:checked');
+                const enableMaxLength = document.getElementById('enableMaxLength');
+                const maxLengthInput = document.getElementById('maxLengthInput');
+                
+                if (selectedCase) column.caseFormat = selectedCase.value;
+                if (enableMaxLength.checked && maxLengthInput.value) {
+                    column.maxLength = parseInt(maxLengthInput.value);
+                } else {
+                    column.maxLength = null;
+                }
             }
             
             this.onConfigurationChange();
@@ -968,22 +1296,15 @@ class CSVCustomizerV2 {
     }
 
     showStep(stepNumber) {
-        console.log('Showing step:', stepNumber);
         const steps = document.querySelectorAll('.step-container');
-        console.log('Found step containers:', steps.length);
         steps.forEach(step => {
-            console.log('Hiding step:', step.id);
             step.classList.remove('active');
             step.style.display = 'none';
         });
         const targetStep = document.getElementById(`step${stepNumber}`);
-        console.log('Target step element:', targetStep);
         if (targetStep) {
             targetStep.classList.add('active');
             targetStep.style.display = 'block';
-            console.log('Step displayed:', stepNumber, 'Display:', targetStep.style.display);
-        } else {
-            console.error('Step not found:', stepNumber);
         }
     }
 
@@ -1010,8 +1331,12 @@ class CSVCustomizerV2 {
         // Build summary
         const columnCount = this.configuration.columns.length;
         const twoRowEnabled = this.configuration.twoRowLogicEnabled ? 'Enabled' : 'Disabled';
-        const dateColumns = this.configuration.columns.filter(c => c.dataField === 'date').length;
-        const amountColumns = this.configuration.columns.filter(c => c.dataField === 'amount').length;
+        const dateColumns = this.configuration.columns.filter(c => 
+            c.dataField === 'transaction_date' || c.dataField === 'booking_date' || c.dataField === 'receipt_date'
+        ).length;
+        const amountColumns = this.configuration.columns.filter(c => 
+            c.dataField === 'amount' || c.dataField === 'debit' || c.dataField === 'credit'
+        ).length;
         
         configSummary.innerHTML = `
             <div class="summary-item">
@@ -1095,32 +1420,27 @@ class CSVCustomizerV2 {
         const previewData = [];
         this.sampleData.slice(0, 5).forEach(transaction => {
             if (this.configuration.twoRowLogicEnabled) {
-                // Generate two rows per transaction (Debit and Credit)
-                const debitRow = {};
-                const creditRow = {};
+                // Generate two rows per transaction (Row 1 and Row 2)
+                const row1 = {};
+                const row2 = {};
                 
                 visibleColumns.forEach(column => {
-                    const baseValue = this.formatValue(transaction[column.dataField], column.formatting);
+                    // Get value based on Row 1 configuration
+                    const row1Value = this.getValueForRow(transaction, column, 'row1');
+                    row1[column.header] = row1Value;
                     
-                    if (column.splitEnabled) {
-                        // Use custom split values if provided, otherwise use base value
-                        // If debitValue/creditValue is empty, use baseValue
-                        debitRow[column.header] = column.debitValue.trim() || baseValue;
-                        creditRow[column.header] = column.creditValue.trim() || baseValue;
-                    } else {
-                        // Same value for both rows
-                        debitRow[column.header] = baseValue;
-                        creditRow[column.header] = baseValue;
-                    }
+                    // Get value based on Row 2 configuration
+                    const row2Value = this.getValueForRow(transaction, column, 'row2');
+                    row2[column.header] = row2Value;
                 });
                 
-                previewData.push(debitRow);
-                previewData.push(creditRow);
+                previewData.push(row1);
+                previewData.push(row2);
             } else {
                 // Single row per transaction
                 const row = {};
                 visibleColumns.forEach(column => {
-                    row[column.header] = this.formatValue(transaction[column.dataField], column.formatting);
+                    row[column.header] = this.getFormattedValue(transaction, column);
                 });
                 previewData.push(row);
             }
@@ -1131,6 +1451,60 @@ class CSVCustomizerV2 {
         
         // Render CSV
         this.renderCSVPreview(visibleColumns, previewData);
+    }
+
+    getValueForRow(transaction, column, rowNumber) {
+        const mode = column[`${rowNumber}Mode`];
+        
+        // Handle constant fields
+        if (column.isConstant) {
+            return column.constantValue || '';
+        }
+        
+        // Handle Row 1/Row 2 modes
+        if (mode === 'blank') {
+            return '';
+        } else if (mode === 'same') {
+            return this.getFormattedValue(transaction, column);
+        } else if (mode === 'constant') {
+            return column[`${rowNumber}Value`] || '';
+        } else if (mode === 'amount') {
+            // For amount fields, get the transaction amount
+            const amount = transaction[column.dataField] || 0;
+            return this.formatAmountValue(amount, column);
+        }
+        
+        return this.getFormattedValue(transaction, column);
+    }
+
+    getFormattedValue(transaction, column) {
+        // Handle constant fields
+        if (column.isConstant) {
+            return column.constantValue || '';
+        }
+        
+        // Get raw value from transaction
+        let value = transaction[column.dataField];
+        
+        // Handle missing values
+        if (value === undefined || value === null || value === '') {
+            return '';
+        }
+        
+        // Apply formatting based on field type
+        const isDateField = column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date';
+        const isAmountField = column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit';
+        const isLibelleField = column.dataField === 'comment';
+        
+        if (isDateField) {
+            return this.formatDateValue(value, column.dateFormat || 'YYYY-MM-DD');
+        } else if (isAmountField) {
+            return this.formatAmountValue(value, column);
+        } else if (isLibelleField) {
+            return this.formatTextValue(value, column);
+        }
+        
+        return String(value);
     }
 
     renderPreviewTable(columns, data) {
@@ -1218,64 +1592,74 @@ class CSVCustomizerV2 {
     generateSampleData() {
         return [
             {
-                transaction_id: 'TXN-001',
-                date: '2025-01-15',
-                merchant: 'Office Supplies Co.',
-                amount: 1250.50,
-                currency: 'EUR',
-                category: 'Office Expenses',
-                notes: 'Monthly office supplies',
-                account: 'ACC-001',
-                card_number: '****1234',
-                reference: 'REF-001'
+                transaction_date: '2025-07-01',
+                booking_date: '2025-07-01',
+                receipt_date: '2025-07-01',
+                piece: '56001',
+                ref: '56001',
+                supplier_account_number: '401AMAZON',
+                card_account_number: '512',
+                comment: 'AMAZON Invoice 56001',
+                amount: 100.00,
+                debit: 100.00,
+                credit: 0.00,
+                cost_center: '2506-MUSIDANUBE'
             },
             {
-                transaction_id: 'TXN-002',
-                date: '2025-01-16',
-                merchant: 'Cloud Services Inc.',
+                transaction_date: '2025-07-02',
+                booking_date: '2025-07-02',
+                receipt_date: '2025-07-02',
+                piece: '56002',
+                ref: '56002',
+                supplier_account_number: '401OFFICE',
+                card_account_number: '512',
+                comment: 'Office Supplies Order 56002',
+                amount: 45.00,
+                debit: 45.00,
+                credit: 0.00,
+                cost_center: '2506-MUSIDANUBE'
+            },
+            {
+                transaction_date: '2025-07-03',
+                booking_date: '2025-07-03',
+                receipt_date: '2025-07-03',
+                piece: '56003',
+                ref: '56003',
+                supplier_account_number: '401CLOUD',
+                card_account_number: '512',
+                comment: 'Cloud Services Subscription 56003',
                 amount: 299.99,
-                currency: 'EUR',
-                category: 'Software',
-                notes: 'Monthly subscription',
-                account: 'ACC-002',
-                card_number: '****5678',
-                reference: 'REF-002'
+                debit: 299.99,
+                credit: 0.00,
+                cost_center: '2506-MUSIDANUBE'
             },
             {
-                transaction_id: 'TXN-003',
-                date: '2025-01-17',
-                merchant: 'Travel Agency',
+                transaction_date: '2025-07-04',
+                booking_date: '2025-07-04',
+                receipt_date: '2025-07-04',
+                piece: '56004',
+                ref: '56004',
+                supplier_account_number: '401TRAVEL',
+                card_account_number: '512',
+                comment: 'Business Trip Booking 56004',
                 amount: 850.00,
-                currency: 'EUR',
-                category: 'Travel',
-                notes: 'Business trip expenses',
-                account: 'ACC-001',
-                card_number: '****1234',
-                reference: 'REF-003'
+                debit: 850.00,
+                credit: 0.00,
+                cost_center: '2506-MUSIDANUBE'
             },
             {
-                transaction_id: 'TXN-004',
-                date: '2025-01-18',
-                merchant: 'Restaurant',
-                amount: 45.50,
-                currency: 'EUR',
-                category: 'Meals',
-                notes: 'Team lunch',
-                account: 'ACC-003',
-                card_number: '****9012',
-                reference: 'REF-004'
-            },
-            {
-                transaction_id: 'TXN-005',
-                date: '2025-01-19',
-                merchant: 'Hardware Store',
-                amount: 320.75,
-                currency: 'EUR',
-                category: 'Equipment',
-                notes: 'New equipment purchase',
-                account: 'ACC-001',
-                card_number: '****1234',
-                reference: 'REF-005'
+                transaction_date: '2025-07-05',
+                booking_date: '2025-07-05',
+                receipt_date: '2025-07-05',
+                piece: '56005',
+                ref: '56005',
+                supplier_account_number: '401RESTAURANT',
+                card_account_number: '512',
+                comment: 'Team Lunch 56005',
+                amount: 67.50,
+                debit: 67.50,
+                credit: 0.00,
+                cost_center: '2506-MUSIDANUBE'
             }
         ];
     }

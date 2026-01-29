@@ -167,14 +167,17 @@
                 <div class="step-container" id="step1">
                     <div class="config-header">
                         <div class="config-title-section">
-                            <div>
+                            <div class="config-heading-row">
+                                <button class="config-back-btn" id="configBackBtn" type="button" title="Back to landing">
+                                    <i class="ph ph-arrow-left"></i>
+                                </button>
                                 <h2 class="config-title">CSV Export Configuration</h2>
-                                <div class="config-meta" id="configMeta">
+                            </div>
+                            <div class="config-meta" id="configMeta">
                                     <span class="meta-item">Last updated by: <strong>John Doe</strong></span>
                                     <span class="meta-separator">•</span>
                                     <span class="meta-item">Last updated at: <strong id="lastUpdatedAt">—</strong></span>
                                 </div>
-                            </div>
                         </div>
                         <div class="config-actions">
                             <button class="btn-secondary" id="previewBtn">
@@ -391,6 +394,58 @@
                                 <span class="formatting-radio-label">MM/DD/YYYY</span>
                                 <span class="formatting-radio-example">01/15/2024</span>
                             </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="YYYY.MM.DD" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">YYYY.MM.DD</span>
+                                <span class="formatting-radio-example">2024.01.15</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="YYYY-MM-DD HH:mm" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">YYYY-MM-DD HH:mm</span>
+                                <span class="formatting-radio-example">2024-01-15 14:30</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="YYYY-MM-DD HH:mm:ss" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">YYYY-MM-DD HH:mm:ss</span>
+                                <span class="formatting-radio-example">2024-01-15 14:30:45</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="dateFormat" value="DD/MM/YYYY HH:mm" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">DD/MM/YYYY HH:mm</span>
+                                <span class="formatting-radio-example">15/01/2024 14:30</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIBELLE Formatting Options -->
+                <div id="libelleFormattingOptions" style="display: none;">
+                    <div class="formatting-section">
+                        <label class="formatting-label">Case</label>
+                        <div class="formatting-radio-group">
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="caseFormat" value="original" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Original</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="caseFormat" value="upper" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Upper</span>
+                            </label>
+                            <label class="formatting-radio-option">
+                                <input type="radio" name="caseFormat" value="lower" class="formatting-radio-input" />
+                                <span class="formatting-radio-label">Lower</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="formatting-section">
+                        <label class="formatting-toggle-label">
+                            <input type="checkbox" id="enableMaxLength" class="formatting-checkbox" />
+                            <span>Enable Max Length</span>
+                        </label>
+                        <div id="maxLengthField" style="display: none; margin-top: 12px;">
+                            <label class="formatting-label">Max Length</label>
+                            <input type="number" id="maxLengthInput" class="formatting-input" placeholder="Enter max length" min="1" />
                         </div>
                     </div>
                 </div>
