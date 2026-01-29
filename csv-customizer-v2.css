@@ -1069,6 +1069,56 @@ body {
     background-color: #e0efff;
 }
 
+/* Expandable Row 1 / Row 2 configuration (accordion) – no chrome when collapsed; only ROWS column chevron toggles */
+.row-config-detail-row {
+    background: transparent;
+}
+
+.row-config-detail-row td {
+    vertical-align: top;
+    padding: 0;
+    border-top: none;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.row-config-detail-cell {
+    padding: 0 !important;
+}
+
+.row-config-content {
+    padding: 12px 16px 16px 16px;
+}
+
+.row-config-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px 24px;
+    padding: 12px 0;
+}
+
+.row-config-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-width: 200px;
+}
+
+.row-config-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555555;
+    min-width: 48px;
+}
+
+.row-config-group .table-select {
+    min-width: 140px;
+}
+
+.row-config-group .table-input {
+    min-width: 120px;
+}
+
 .col-order {
     width: 80px;
 }
@@ -1121,6 +1171,35 @@ body {
 
 .col-format {
     width: 150px;
+}
+
+.col-rows {
+    width: 56px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.rows-accordion-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 2px solid #2563eb;
+    background: #ffffff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.rows-accordion-btn:hover {
+    background-color: #f8fafc;
+}
+
+.rows-accordion-btn .rows-accordion-chevron {
+    font-size: 16px;
+    color: #2563eb;
 }
 
 .col-split {

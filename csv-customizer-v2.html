@@ -222,8 +222,7 @@
                                     <th class="col-field">Data Field</th>
                                     <th class="col-sample">Sample Value</th>
                                     <th class="col-format">Formatting</th>
-                                    <th class="col-row1" id="colRow1Header" style="display: none;">Row 1</th>
-                                    <th class="col-row2" id="colRow2Header" style="display: none;">Row 2</th>
+                                    <th class="col-rows" id="colRowsHeader" style="display: none;">ROWS</th>
                                     <th class="col-actions">Actions</th>
                                 </tr>
                             </thead>
@@ -525,6 +524,17 @@
                             <label class="formatting-label">Currency Symbol</label>
                             <input type="text" id="currencySymbolInput" class="formatting-input" placeholder="EUR" maxlength="10" />
                         </div>
+                    </div>
+                </div>
+
+                <!-- Missing value behaviour (Code Journal, Piece, Ref, Supplier/Card Account Number, Code Section) -->
+                <div id="missingValueFormattingOptions" style="display: none;">
+                    <div class="formatting-section">
+                        <label class="formatting-label">Missing value behaviour</label>
+                        <label class="formatting-toggle-label">
+                            <input type="checkbox" id="missingValueLeaveBlank" class="formatting-checkbox" checked />
+                            <span>Leave blank</span>
+                        </label>
                     </div>
                 </div>
             </div>

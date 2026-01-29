@@ -21,15 +21,7 @@ class CSVCustomizerV2 {
         this.renderConfigurationTable();
         this.updateLastUpdatedDisplay();
         this.updateSaveButtonState();
-        
-        // Set initial visibility of row headers
-        const row1Header = document.getElementById('colRow1Header');
-        const row2Header = document.getElementById('colRow2Header');
-        if (row1Header && row2Header) {
-            const shouldShow = this.configuration.twoRowLogicEnabled;
-            row1Header.style.display = shouldShow ? 'table-cell' : 'none';
-            row2Header.style.display = shouldShow ? 'table-cell' : 'none';
-        }
+        this.updateRowsColumnVisibility();
         
         // Check if configuration exists to show landing or config screen
         const hasConfig = localStorage.getItem('csvConfiguration') !== null;
@@ -78,13 +70,7 @@ class CSVCustomizerV2 {
                 this.configuration.twoRowLogicEnabled = e.target.checked;
                 this.onConfigurationChange();
                 this.renderConfigurationTable();
-                // Show/hide row column headers
-                const row1Header = document.getElementById('colRow1Header');
-                const row2Header = document.getElementById('colRow2Header');
-                if (row1Header && row2Header) {
-                    row1Header.style.display = e.target.checked ? 'table-cell' : 'none';
-                    row2Header.style.display = e.target.checked ? 'table-cell' : 'none';
-                }
+                this.updateRowsColumnVisibility();
             });
         }
 
@@ -462,11 +448,173 @@ class CSVCustomizerV2 {
                 const creditRow = this.createConfigRow(column, index, 'credit');
                 const debitRow = this.createConfigRow(column, index, 'debit');
                 tbody.appendChild(creditRow);
+                tbody.appendChild(this.createRowConfigDetailRow(column, 'credit'));
                 tbody.appendChild(debitRow);
+                tbody.appendChild(this.createRowConfigDetailRow(column, 'debit'));
             } else {
                 const row = this.createConfigRow(column, index);
                 tbody.appendChild(row);
+                if (this.configuration.twoRowLogicEnabled) {
+                    tbody.appendChild(this.createRowConfigDetailRow(column, null));
+                }
             }
+        });
+    }
+
+    createRowConfigDetailRow(column, amountRowType = null) {
+        const tr = document.createElement('tr');
+        tr.className = 'row-config-detail-row';
+        tr.dataset.columnId = column.id;
+        if (amountRowType) tr.dataset.amountRowType = amountRowType;
+
+        const row1Options = this.getRowModeOptions(column, 'row1', amountRowType);
+        const row2Options = this.getRowModeOptions(column, 'row2', amountRowType);
+        const showRow1Constant = this.shouldShowConstantInput(column, 'row1', amountRowType);
+        const showRow2Constant = this.shouldShowConstantInput(column, 'row2', amountRowType);
+        const row1Value = this.getRowValue(column, 'row1', amountRowType);
+        const row2Value = this.getRowValue(column, 'row2', amountRowType);
+        const row1DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
+        const row2DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
+
+        tr.innerHTML = `
+            <td colspan="7" class="row-config-detail-cell">
+                <div class="row-config-content" hidden>
+                    <div class="row-config-inner">
+                        <div class="row-config-group">
+                            <label class="row-config-label">Row 1</label>
+                            <select class="table-select row-mode-select" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs}>
+                                ${row1Options}
+                            </select>
+                            ${showRow1Constant ? `
+                                <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row1Value}" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs} />
+                            ` : ''}
+                        </div>
+                        <div class="row-config-group">
+                            <label class="row-config-label">Row 2</label>
+                            <select class="table-select row-mode-select" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs}>
+                                ${row2Options}
+                            </select>
+                            ${showRow2Constant ? `
+                                <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row2Value}" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs} />
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </td>
+        `;
+
+        const content = tr.querySelector('.row-config-content');
+
+        const rowModeSelects = tr.querySelectorAll('.row-mode-select');
+        rowModeSelects.forEach(select => {
+            select.addEventListener('change', (e) => {
+                const row = e.target.dataset.row;
+                const amtRowType = e.target.dataset.amountRowType;
+                if (amtRowType) {
+                    const propertyName = `${amtRowType}${row.charAt(0).toUpperCase() + row.slice(1)}Mode`;
+                    column[propertyName] = e.target.value;
+                } else {
+                    column[`${row}Mode`] = e.target.value;
+                }
+                this.onConfigurationChange();
+                this.updateRowConfigDetailContent(column, amountRowType);
+            });
+        });
+
+        const rowValueInputs = tr.querySelectorAll('.row-value-input');
+        rowValueInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const row = e.target.dataset.row;
+                const amtRowType = e.target.dataset.amountRowType;
+                if (amtRowType) {
+                    const propertyName = `${amtRowType}${row.charAt(0).toUpperCase() + row.slice(1)}Value`;
+                    column[propertyName] = e.target.value;
+                } else {
+                    column[`${row}Value`] = e.target.value;
+                }
+                this.onConfigurationChange();
+            });
+        });
+
+        return tr;
+    }
+
+    updateRowsColumnVisibility() {
+        const colRowsHeader = document.getElementById('colRowsHeader');
+        if (colRowsHeader) {
+            colRowsHeader.style.display = this.configuration.twoRowLogicEnabled ? 'table-cell' : 'none';
+        }
+    }
+
+    updateRowConfigDetailContent(column, amountRowType = null) {
+        const selector = amountRowType
+            ? `tr.row-config-detail-row[data-column-id="${column.id}"][data-amount-row-type="${amountRowType}"]`
+            : `tr.row-config-detail-row[data-column-id="${column.id}"]:not([data-amount-row-type])`;
+        const detailTr = document.querySelector(selector);
+        if (!detailTr) return;
+        const content = detailTr.querySelector('.row-config-content');
+        if (!content) return;
+
+        const row1Options = this.getRowModeOptions(column, 'row1', amountRowType);
+        const row2Options = this.getRowModeOptions(column, 'row2', amountRowType);
+        const showRow1Constant = this.shouldShowConstantInput(column, 'row1', amountRowType);
+        const showRow2Constant = this.shouldShowConstantInput(column, 'row2', amountRowType);
+        const row1Value = this.getRowValue(column, 'row1', amountRowType);
+        const row2Value = this.getRowValue(column, 'row2', amountRowType);
+        const row1DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
+        const row2DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
+
+        content.innerHTML = `
+            <div class="row-config-inner">
+                <div class="row-config-group">
+                    <label class="row-config-label">Row 1</label>
+                    <select class="table-select row-mode-select" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs}>
+                        ${row1Options}
+                    </select>
+                    ${showRow1Constant ? `
+                        <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row1Value}" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs} />
+                    ` : ''}
+                </div>
+                <div class="row-config-group">
+                    <label class="row-config-label">Row 2</label>
+                    <select class="table-select row-mode-select" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs}>
+                        ${row2Options}
+                    </select>
+                    ${showRow2Constant ? `
+                        <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row2Value}" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs} />
+                    ` : ''}
+                </div>
+            </div>
+        `;
+
+        const rowModeSelects = content.querySelectorAll('.row-mode-select');
+        rowModeSelects.forEach(select => {
+            select.addEventListener('change', (e) => {
+                const row = e.target.dataset.row;
+                const amtRowType = e.target.dataset.amountRowType;
+                if (amtRowType) {
+                    const propertyName = `${amtRowType}${row.charAt(0).toUpperCase() + row.slice(1)}Mode`;
+                    column[propertyName] = e.target.value;
+                } else {
+                    column[`${row}Mode`] = e.target.value;
+                }
+                this.onConfigurationChange();
+                this.updateRowConfigDetailContent(column, amountRowType);
+            });
+        });
+        const rowValueInputs = content.querySelectorAll('.row-value-input');
+        rowValueInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const row = e.target.dataset.row;
+                const amtRowType = e.target.dataset.amountRowType;
+                if (amtRowType) {
+                    const propertyName = `${amtRowType}${row.charAt(0).toUpperCase() + row.slice(1)}Value`;
+                    column[propertyName] = e.target.value;
+                } else {
+                    column[`${row}Value`] = e.target.value;
+                }
+                this.onConfigurationChange();
+            });
         });
     }
 
@@ -480,8 +628,6 @@ class CSVCustomizerV2 {
             tr.dataset.amountRowType = amountRowType;
         }
 
-        const splitCellStyle = this.configuration.twoRowLogicEnabled ? '' : 'display: none;';
-        
         // Determine the header text
         let headerValue = column.header;
         let headerDisabled = false;
@@ -543,42 +689,13 @@ class CSVCustomizerV2 {
                     <i class="ph ph-sliders-horizontal"></i>
                 </button>
             </td>
-            <td class="col-row1" style="${splitCellStyle}">
-                <div class="row-config">
-                    <select class="table-select row-mode-select" data-column-id="${column.id}" data-row="row1" ${amountRowType ? `data-amount-row-type="${amountRowType}"` : ''}>
-                        ${this.getRowModeOptions(column, 'row1', amountRowType)}
-                    </select>
-                    ${this.shouldShowConstantInput(column, 'row1', amountRowType) ? `
-                        <input 
-                            type="text" 
-                            class="table-input row-value-input" 
-                            placeholder="Enter value"
-                            value="${this.getRowValue(column, 'row1', amountRowType)}"
-                            data-column-id="${column.id}"
-                            data-row="row1"
-                            ${amountRowType ? `data-amount-row-type="${amountRowType}"` : ''}
-                        />
-                    ` : ''}
-                </div>
+            ${this.configuration.twoRowLogicEnabled ? `
+            <td class="col-rows">
+                <button type="button" class="rows-accordion-btn" title="Expand row configuration" aria-expanded="false">
+                    <i class="ph ph-caret-down rows-accordion-chevron"></i>
+                </button>
             </td>
-            <td class="col-row2" style="${splitCellStyle}">
-                <div class="row-config">
-                    <select class="table-select row-mode-select" data-column-id="${column.id}" data-row="row2" ${amountRowType ? `data-amount-row-type="${amountRowType}"` : ''}>
-                        ${this.getRowModeOptions(column, 'row2', amountRowType)}
-                    </select>
-                    ${this.shouldShowConstantInput(column, 'row2', amountRowType) ? `
-                        <input 
-                            type="text" 
-                            class="table-input row-value-input" 
-                            placeholder="Enter value"
-                            value="${this.getRowValue(column, 'row2', amountRowType)}"
-                            data-column-id="${column.id}"
-                            data-row="row2"
-                            ${amountRowType ? `data-amount-row-type="${amountRowType}"` : ''}
-                        />
-                    ` : ''}
-                </div>
-            </td>
+            ` : ''}
             <td class="col-actions">
                 <div class="table-actions">
                     <button class="table-action-btn" title="Remove column" data-action="remove" data-column-id="${column.id}">
@@ -635,45 +752,24 @@ class CSVCustomizerV2 {
             });
         }
 
-        // Row mode selectors
-        const rowModeSelects = tr.querySelectorAll('.row-mode-select');
-        rowModeSelects.forEach(select => {
-            select.addEventListener('change', (e) => {
-                const row = e.target.dataset.row;
-                const amountRowType = e.target.dataset.amountRowType;
-                
-                if (amountRowType) {
-                    // Credit or Debit row
-                    const propertyName = `${amountRowType}${row.charAt(0).toUpperCase() + row.slice(1)}Mode`;
-                    column[propertyName] = e.target.value;
-                } else {
-                    column[`${row}Mode`] = e.target.value;
+        // ROWS accordion button (toggle detail row)
+        const rowsAccordionBtn = tr.querySelector('.rows-accordion-btn');
+        if (rowsAccordionBtn) {
+            rowsAccordionBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const detailTr = tr.nextElementSibling;
+                if (!detailTr || !detailTr.classList.contains('row-config-detail-row')) return;
+                const content = detailTr.querySelector('.row-config-content');
+                const expanded = content.hidden;
+                content.hidden = !expanded;
+                rowsAccordionBtn.setAttribute('aria-expanded', expanded);
+                const mainChevron = rowsAccordionBtn.querySelector('.rows-accordion-chevron');
+                if (mainChevron) {
+                    mainChevron.classList.toggle('rows-accordion-chevron-expanded', expanded);
+                    mainChevron.className = expanded ? 'ph ph-caret-up rows-accordion-chevron rows-accordion-chevron-expanded' : 'ph ph-caret-down rows-accordion-chevron';
                 }
-                
-                this.onConfigurationChange();
-                // Re-render to show/hide constant value input
-                this.renderConfigurationTable();
             });
-        });
-
-        // Row value inputs
-        const rowValueInputs = tr.querySelectorAll('.row-value-input');
-        rowValueInputs.forEach(input => {
-            input.addEventListener('change', (e) => {
-                const row = e.target.dataset.row;
-                const amountRowType = e.target.dataset.amountRowType;
-                
-                if (amountRowType) {
-                    // Credit or Debit row
-                    const propertyName = `${amountRowType}${row.charAt(0).toUpperCase() + row.slice(1)}Value`;
-                    column[propertyName] = e.target.value;
-                } else {
-                    column[`${row}Value`] = e.target.value;
-                }
-                
-                this.onConfigurationChange();
-            });
-        });
+        }
 
         // Remove button
         const removeBtn = tr.querySelector('button[data-action="remove"]');
@@ -926,6 +1022,11 @@ class CSVCustomizerV2 {
         if (column.dataField === 'comment') {
             return false;
         }
+        // Enable for receipt/optional fields - missing value behaviour (Code Journal, Piece, Ref, Supplier Account Number, Card Account Number, Code Section)
+        const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'supplier_account_number', 'card_account_number', 'cost_center'];
+        if (receiptOptionalFields.includes(column.dataField)) {
+            return false;
+        }
         // Disable for all other fields (including constants)
         return true;
     }
@@ -1032,6 +1133,7 @@ class CSVCustomizerV2 {
         const dateOptions = document.getElementById('dateFormattingOptions');
         const amountOptions = document.getElementById('amountFormattingOptions');
         const libelleOptions = document.getElementById('libelleFormattingOptions');
+        const missingValueOptions = document.getElementById('missingValueFormattingOptions');
         
         // Store current column
         this.currentFormattingColumn = column;
@@ -1040,11 +1142,14 @@ class CSVCustomizerV2 {
         dateOptions.style.display = 'none';
         amountOptions.style.display = 'none';
         libelleOptions.style.display = 'none';
+        if (missingValueOptions) missingValueOptions.style.display = 'none';
         
         // Show appropriate options based on field type
         const isDateField = column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date';
         const isAmountField = column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit';
         const isLibelleField = column.dataField === 'comment';
+        const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'supplier_account_number', 'card_account_number', 'cost_center'];
+        const isMissingValueField = receiptOptionalFields.includes(column.dataField);
         
         if (isDateField) {
             modalTitle.textContent = 'Configure Date Formatting';
@@ -1113,6 +1218,13 @@ class CSVCustomizerV2 {
                     maxLengthInput.value = '';
                 }
             };
+        } else if (isMissingValueField && missingValueOptions) {
+            modalTitle.textContent = 'Configure Formatting';
+            missingValueOptions.style.display = 'block';
+            const leaveBlankCheckbox = document.getElementById('missingValueLeaveBlank');
+            if (leaveBlankCheckbox) {
+                leaveBlankCheckbox.checked = (column.missingValueBehaviour || 'leave-blank') === 'leave-blank';
+            }
         }
         
         // Show modal
@@ -1131,6 +1243,8 @@ class CSVCustomizerV2 {
             const isDateField = column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date';
             const isAmountField = column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit';
             const isLibelleField = column.dataField === 'comment';
+            const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'supplier_account_number', 'card_account_number', 'cost_center'];
+            const isMissingValueField = receiptOptionalFields.includes(column.dataField);
             
             if (isDateField) {
                 const selectedDateFormat = modalOverlay.querySelector('input[name="dateFormat"]:checked');
@@ -1160,6 +1274,9 @@ class CSVCustomizerV2 {
                 } else {
                     column.maxLength = null;
                 }
+            } else if (isMissingValueField) {
+                const leaveBlankCheckbox = document.getElementById('missingValueLeaveBlank');
+                column.missingValueBehaviour = leaveBlankCheckbox && leaveBlankCheckbox.checked ? 'leave-blank' : null;
             }
             
             this.onConfigurationChange();
