@@ -475,6 +475,9 @@ class CSVCustomizerV2 {
         const row2Value = this.getRowValue(column, 'row2', amountRowType);
         const row1DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
         const row2DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
+        const row1Mode = amountRowType ? (column[`${amountRowType}Row1Mode`] || 'same') : (column.row1Mode || 'same');
+        const row2Mode = amountRowType ? (column[`${amountRowType}Row2Mode`] || 'same') : (column.row2Mode || 'same');
+        const sampleValue = String(this.getSampleValue(column)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
         tr.innerHTML = `
             <td colspan="7" class="row-config-detail-cell">
@@ -488,6 +491,7 @@ class CSVCustomizerV2 {
                             ${showRow1Constant ? `
                                 <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row1Value}" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs} />
                             ` : ''}
+                            ${row1Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
                         </div>
                         <div class="row-config-group">
                             <label class="row-config-label">Row 2</label>
@@ -497,6 +501,7 @@ class CSVCustomizerV2 {
                             ${showRow2Constant ? `
                                 <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row2Value}" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs} />
                             ` : ''}
+                            ${row2Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -563,6 +568,9 @@ class CSVCustomizerV2 {
         const row2Value = this.getRowValue(column, 'row2', amountRowType);
         const row1DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
         const row2DataAttrs = amountRowType ? `data-amount-row-type="${amountRowType}"` : '';
+        const row1Mode = amountRowType ? (column[`${amountRowType}Row1Mode`] || 'same') : (column.row1Mode || 'same');
+        const row2Mode = amountRowType ? (column[`${amountRowType}Row2Mode`] || 'same') : (column.row2Mode || 'same');
+        const sampleValue = String(this.getSampleValue(column)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
         content.innerHTML = `
             <div class="row-config-inner">
@@ -574,6 +582,7 @@ class CSVCustomizerV2 {
                     ${showRow1Constant ? `
                         <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row1Value}" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs} />
                     ` : ''}
+                    ${row1Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
                 </div>
                 <div class="row-config-group">
                     <label class="row-config-label">Row 2</label>
@@ -583,6 +592,7 @@ class CSVCustomizerV2 {
                     ${showRow2Constant ? `
                         <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row2Value}" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs} />
                     ` : ''}
+                    ${row2Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
                 </div>
             </div>
         `;
@@ -656,7 +666,7 @@ class CSVCustomizerV2 {
                 />
             </td>
             <td class="col-field">
-                <select class="table-select" data-column-id="${column.id}" data-field="dataField" ${amountRowType ? 'disabled' : ''}>
+                <select class="table-select" data-column-id="${column.id}" data-field="dataField" ${amountRowType || column.isConstant ? 'disabled' : ''}>
                     ${this.getDataFieldOptions(column.dataField)}
                 </select>
             </td>

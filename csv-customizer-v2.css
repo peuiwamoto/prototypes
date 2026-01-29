@@ -1085,38 +1085,52 @@ body {
     padding: 0 !important;
 }
 
+/* Align expandable content with Column Header column (Order col width 80px + cell padding 16px) */
 .row-config-content {
-    padding: 12px 16px 16px 16px;
+    padding: 12px 16px 16px 96px;
 }
 
 .row-config-inner {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px 24px;
+    flex-direction: column;
+    gap: 12px;
     padding: 12px 0;
 }
 
 .row-config-group {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    min-width: 200px;
+    gap: 12px;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
 .row-config-label {
     font-size: 13px;
     font-weight: 500;
     color: #555555;
-    min-width: 48px;
+    width: 48px;
+    flex-shrink: 0;
 }
 
+/* Match main row column widths: Data Field = 200px, Sample Value = 260px */
 .row-config-group .table-select {
-    min-width: 140px;
+    width: 200px;
+    min-width: 200px;
+    flex-shrink: 0;
 }
 
 .row-config-group .table-input {
-    min-width: 120px;
+    width: 260px;
+    min-width: 260px;
+    flex-shrink: 0;
+}
+
+.row-config-sample-preview {
+    font-size: 13px;
+    color: #666666;
+    font-style: italic;
+    flex-shrink: 0;
 }
 
 .col-order {
