@@ -1133,6 +1133,36 @@ body {
     flex-shrink: 0;
 }
 
+.row-config-format-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #666666;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.row-config-format-btn:hover:not(:disabled) {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.row-config-format-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.row-config-format-btn i {
+    font-size: 16px;
+}
+
 .col-order {
     width: 80px;
 }

@@ -139,17 +139,19 @@ class CSVCustomizerV2 {
                 ...this.configuration,
                 ...saved
             };
-            // Migrate old _constant data fields to single field + isConstant
+            // Migrate old _constant data fields and isConstant to dataField 'constant'
             this.configuration.columns.forEach(col => {
                 if (col.dataField === 'code_journal_constant') {
-                    col.dataField = 'code_journal';
-                    col.isConstant = true;
+                    col.dataField = 'constant';
+                    col.constantValue = col.constantValue || 'BQ_PLIANT';
                 } else if (col.dataField === 'account_number_constant') {
-                    col.dataField = 'supplier_account_number';
-                    col.isConstant = true;
+                    col.dataField = 'constant';
+                    col.constantValue = col.constantValue || '';
                 } else if (col.dataField === 'cost_center_constant') {
-                    col.dataField = 'cost_center';
-                    col.isConstant = true;
+                    col.dataField = 'constant';
+                    col.constantValue = col.constantValue || '';
+                } else if (col.isConstant) {
+                    col.dataField = 'constant';
                 }
             });
             // Set the toggle state
@@ -198,14 +200,14 @@ class CSVCustomizerV2 {
                 id: 'col2',
                 order: 1,
                 header: 'Code Journal',
-                dataField: 'code_journal',
+                dataField: 'constant',
                 formatting: 'text',
                 visible: true,
                 splitEnabled: false,
                 debitValue: '',
                 creditValue: '',
                 isAmountField: false,
-                isConstant: true,
+                isConstant: false,
                 constantValue: 'BQ_PLIANT',
                 splitIntoColumns: false,
                 splitIntoRows: false,
@@ -282,7 +284,7 @@ class CSVCustomizerV2 {
                 id: 'col5',
                 order: 4,
                 header: 'Numero de Compte',
-                dataField: 'supplier_account_number',
+                dataField: 'account_number',
                 formatting: 'text',
                 visible: true,
                 splitEnabled: false,
@@ -492,6 +494,9 @@ class CSVCustomizerV2 {
                                 <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row1Value}" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs} />
                             ` : ''}
                             ${row1Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
+                            <button type="button" class="row-config-format-btn format-btn" data-column-id="${column.id}" title="Configure formatting" ${this.shouldDisableFormatButton(column, amountRowType) ? 'disabled' : ''}>
+                                <i class="ph ph-sliders-horizontal"></i>
+                            </button>
                         </div>
                         <div class="row-config-group">
                             <label class="row-config-label">Row 2</label>
@@ -502,6 +507,9 @@ class CSVCustomizerV2 {
                                 <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row2Value}" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs} />
                             ` : ''}
                             ${row2Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
+                            <button type="button" class="row-config-format-btn format-btn" data-column-id="${column.id}" title="Configure formatting" ${this.shouldDisableFormatButton(column, amountRowType) ? 'disabled' : ''}>
+                                <i class="ph ph-sliders-horizontal"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -541,6 +549,16 @@ class CSVCustomizerV2 {
             });
         });
 
+        // Row Config format buttons (Row 1 and Row 2) - same formatting as main column
+        tr.querySelectorAll('.row-config-format-btn').forEach(btn => {
+            if (!btn.disabled) {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openFormattingModal(column);
+                });
+            }
+        });
+
         return tr;
     }
 
@@ -572,6 +590,7 @@ class CSVCustomizerV2 {
         const row2Mode = amountRowType ? (column[`${amountRowType}Row2Mode`] || 'same') : (column.row2Mode || 'same');
         const sampleValue = String(this.getSampleValue(column)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+        const formatBtnDisabled = this.shouldDisableFormatButton(column, amountRowType);
         content.innerHTML = `
             <div class="row-config-inner">
                 <div class="row-config-group">
@@ -583,6 +602,9 @@ class CSVCustomizerV2 {
                         <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row1Value}" data-column-id="${column.id}" data-row="row1" ${row1DataAttrs} />
                     ` : ''}
                     ${row1Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
+                    <button type="button" class="row-config-format-btn format-btn" data-column-id="${column.id}" title="Configure formatting" ${formatBtnDisabled ? 'disabled' : ''}>
+                        <i class="ph ph-sliders-horizontal"></i>
+                    </button>
                 </div>
                 <div class="row-config-group">
                     <label class="row-config-label">Row 2</label>
@@ -593,9 +615,21 @@ class CSVCustomizerV2 {
                         <input type="text" class="table-input row-value-input" placeholder="Enter value" value="${row2Value}" data-column-id="${column.id}" data-row="row2" ${row2DataAttrs} />
                     ` : ''}
                     ${row2Mode === 'same' ? `<span class="row-config-sample-preview">${sampleValue}</span>` : ''}
+                    <button type="button" class="row-config-format-btn format-btn" data-column-id="${column.id}" title="Configure formatting" ${formatBtnDisabled ? 'disabled' : ''}>
+                        <i class="ph ph-sliders-horizontal"></i>
+                    </button>
                 </div>
             </div>
         `;
+
+        content.querySelectorAll('.row-config-format-btn').forEach(btn => {
+            if (!btn.disabled) {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openFormattingModal(column);
+                });
+            }
+        });
 
         const rowModeSelects = content.querySelectorAll('.row-mode-select');
         rowModeSelects.forEach(select => {
@@ -666,13 +700,13 @@ class CSVCustomizerV2 {
                 />
             </td>
             <td class="col-field">
-                <select class="table-select" data-column-id="${column.id}" data-field="dataField" ${amountRowType || column.isConstant ? 'disabled' : ''}>
+                <select class="table-select" data-column-id="${column.id}" data-field="dataField" ${amountRowType ? 'disabled' : ''}>
                     ${this.getDataFieldOptions(column.dataField)}
                 </select>
             </td>
             <td class="col-sample">
                 <div class="sample-value-cell">
-                    ${column.isConstant ? `
+                    ${column.dataField === 'constant' ? `
                         <input 
                             type="text" 
                             class="table-input constant-value-input" 
@@ -683,15 +717,6 @@ class CSVCustomizerV2 {
                     ` : `
                         <span class="sample-value">${this.getSampleValue(column)}</span>
                     `}
-                    <label class="constant-toggle-label" title="Use constant value">
-                        <input 
-                            type="checkbox" 
-                            class="constant-toggle" 
-                            data-column-id="${column.id}"
-                            ${column.isConstant ? 'checked' : ''}
-                        />
-                        <span class="constant-toggle-text">Constant</span>
-                    </label>
                 </div>
             </td>
             <td class="col-format">
@@ -726,24 +751,11 @@ class CSVCustomizerV2 {
         const dataFieldSelect = tr.querySelector('select[data-field="dataField"]');
         dataFieldSelect.addEventListener('change', (e) => {
             column.dataField = e.target.value;
-            // Update amount field flag only (constant is controlled by toggle)
             column.isAmountField = e.target.value === 'amount' || e.target.value === 'debit' || e.target.value === 'credit';
             this.onConfigurationChange();
             this.updateSampleValue(column.id);
-            // Re-render to show/hide behavior button and row config
             this.renderConfigurationTable();
         });
-
-        // Constant toggle
-        const constantToggle = tr.querySelector('.constant-toggle');
-        if (constantToggle) {
-            constantToggle.addEventListener('change', (e) => {
-                column.isConstant = e.target.checked;
-                this.onConfigurationChange();
-                // Re-render to show sample value vs constant input
-                this.renderConfigurationTable();
-            });
-        }
 
         // Constant value input
         const constantInput = tr.querySelector('.constant-value-input');
@@ -821,8 +833,7 @@ class CSVCustomizerV2 {
             {
                 label: 'Accounting',
                 fields: [
-                    { value: 'supplier_account_number', label: 'Supplier Account Number' },
-                    { value: 'card_account_number', label: 'Card Account Number' },
+                    { value: 'account_number', label: 'Account Number' },
                     { value: 'cost_center', label: 'Code Section (Cost Center)' }
                 ]
             },
@@ -836,6 +847,12 @@ class CSVCustomizerV2 {
             {
                 label: 'FX & Currency',
                 fields: []
+            },
+            {
+                label: 'Other',
+                fields: [
+                    { value: 'constant', label: 'Constant' }
+                ]
             }
         ];
 
@@ -850,8 +867,13 @@ class CSVCustomizerV2 {
 
     getSampleValue(column) {
         // If constant field, show constant value
-        if (column.isConstant) {
+        if (column.dataField === 'constant') {
             return column.constantValue || '—';
+        }
+        // Account Number: show supplier_account_number as default sample
+        if (column.dataField === 'account_number') {
+            const sample = this.sampleData[0];
+            return sample.supplier_account_number || sample.card_account_number || '—';
         }
 
         const sample = this.sampleData[0];
@@ -979,10 +1001,10 @@ class CSVCustomizerV2 {
 
     getRowModeOptions(column, rowNumber, amountRowType = null) {
         const isAmountField = column.dataField === 'amount';
+        const isAccountNumberField = column.dataField === 'account_number';
         let currentMode;
         
         if (amountRowType) {
-            // Credit or Debit row
             currentMode = column[`${amountRowType}${rowNumber.charAt(0).toUpperCase() + rowNumber.slice(1)}Mode`];
         } else {
             currentMode = column[`${rowNumber}Mode`];
@@ -992,6 +1014,14 @@ class CSVCustomizerV2 {
             return `
                 <option value="amount" ${currentMode === 'amount' ? 'selected' : ''}>Amount</option>
                 <option value="blank" ${currentMode === 'blank' ? 'selected' : ''}>Blank</option>
+            `;
+        } else if (isAccountNumberField) {
+            return `
+                <option value="same" ${currentMode === 'same' ? 'selected' : ''}>Same Value</option>
+                <option value="blank" ${currentMode === 'blank' ? 'selected' : ''}>Blank</option>
+                <option value="constant" ${currentMode === 'constant' ? 'selected' : ''}>Constant Value</option>
+                <option value="card_account_number" ${currentMode === 'card_account_number' ? 'selected' : ''}>Card Account Number</option>
+                <option value="supplier_account_number" ${currentMode === 'supplier_account_number' ? 'selected' : ''}>Supplier Account</option>
             `;
         } else {
             return `
@@ -1032,12 +1062,15 @@ class CSVCustomizerV2 {
         if (column.dataField === 'comment') {
             return false;
         }
-        // Enable for receipt/optional fields - missing value behaviour (Code Journal, Piece, Ref, Supplier Account Number, Card Account Number, Code Section)
-        const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'supplier_account_number', 'card_account_number', 'cost_center'];
+        // Enable for receipt/optional fields - missing value behaviour (Code Journal, Piece, Ref, Account Number, Code Section)
+        const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'account_number', 'cost_center'];
         if (receiptOptionalFields.includes(column.dataField)) {
             return false;
         }
-        // Disable for all other fields (including constants)
+        // Disable for constant (no formatting)
+        if (column.dataField === 'constant') {
+            return true;
+        }
         return true;
     }
 
@@ -1158,7 +1191,7 @@ class CSVCustomizerV2 {
         const isDateField = column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date';
         const isAmountField = column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit';
         const isLibelleField = column.dataField === 'comment';
-        const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'supplier_account_number', 'card_account_number', 'cost_center'];
+        const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'account_number', 'cost_center'];
         const isMissingValueField = receiptOptionalFields.includes(column.dataField);
         
         if (isDateField) {
@@ -1253,7 +1286,7 @@ class CSVCustomizerV2 {
             const isDateField = column.dataField === 'transaction_date' || column.dataField === 'booking_date' || column.dataField === 'receipt_date';
             const isAmountField = column.dataField === 'amount' || column.dataField === 'debit' || column.dataField === 'credit';
             const isLibelleField = column.dataField === 'comment';
-            const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'supplier_account_number', 'card_account_number', 'cost_center'];
+            const receiptOptionalFields = ['code_journal', 'piece', 'ref', 'account_number', 'cost_center'];
             const isMissingValueField = receiptOptionalFields.includes(column.dataField);
             
             if (isDateField) {
@@ -1583,8 +1616,8 @@ class CSVCustomizerV2 {
     getValueForRow(transaction, column, rowNumber) {
         const mode = column[`${rowNumber}Mode`];
         
-        // Handle constant fields
-        if (column.isConstant) {
+        // Handle constant fields (main column dataField is constant)
+        if (column.dataField === 'constant') {
             return column.constantValue || '';
         }
         
@@ -1596,9 +1629,12 @@ class CSVCustomizerV2 {
         } else if (mode === 'constant') {
             return column[`${rowNumber}Value`] || '';
         } else if (mode === 'amount') {
-            // For amount fields, get the transaction amount
             const amount = transaction[column.dataField] || 0;
             return this.formatAmountValue(amount, column);
+        } else if (mode === 'card_account_number') {
+            return String(transaction.card_account_number || '');
+        } else if (mode === 'supplier_account_number') {
+            return String(transaction.supplier_account_number || '');
         }
         
         return this.getFormattedValue(transaction, column);
@@ -1606,8 +1642,13 @@ class CSVCustomizerV2 {
 
     getFormattedValue(transaction, column) {
         // Handle constant fields
-        if (column.isConstant) {
+        if (column.dataField === 'constant') {
             return column.constantValue || '';
+        }
+        // Account Number: use supplier_account_number as default
+        if (column.dataField === 'account_number') {
+            const value = transaction.supplier_account_number || transaction.card_account_number || '';
+            return String(value);
         }
         
         // Get raw value from transaction
