@@ -80,7 +80,8 @@ let widgetState = {
         bigTop: 'large',
         small: 'small',
         bigBottom: 'large'
-    }
+    },
+    viewAllExpanded: {}
 };
 
 // Initialize state from localStorage or defaults
@@ -101,6 +102,14 @@ function initializeState() {
         if (!widgetState.order.bigTop) widgetState.order.bigTop = {};
         if (!widgetState.order.small) widgetState.order.small = {};
         if (!widgetState.order.bigBottom) widgetState.order.bigBottom = {};
+        
+        // Ensure Account Balance is first (left), My Tasks is second (right) in top section
+        if (widgetConfig.bigTop.find(w => w.id === 'account-balance') && 
+            widgetConfig.bigTop.find(w => w.id === 'my-tasks')) {
+            widgetState.order.bigTop['account-balance'] = 0; // Left position
+            widgetState.order.bigTop['my-tasks'] = 1; // Right position
+        }
+        
         // Ensure section order and names exist
         if (!widgetState.sectionOrder) widgetState.sectionOrder = ['bigTop', 'small', 'bigBottom'];
         if (!widgetState.sectionNames) {
@@ -138,9 +147,20 @@ function initializeState() {
         [...widgetConfig.bigTop, ...widgetConfig.small, ...widgetConfig.bigBottom].forEach(widget => {
             widgetState.visible[widget.id] = true;
         });
+        // Ensure fixed widgets are always visible
+        fixedTopWidgets.forEach(widgetId => {
+            widgetState.visible[widgetId] = true;
+        });
         // Initialize order for each section
+        // Ensure Account Balance is first (left), My Tasks is second (right)
         widgetConfig.bigTop.forEach((widget, index) => {
-            widgetState.order.bigTop[widget.id] = index;
+            if (widget.id === 'account-balance') {
+                widgetState.order.bigTop[widget.id] = 0; // Left position
+            } else if (widget.id === 'my-tasks') {
+                widgetState.order.bigTop[widget.id] = 1; // Right position
+            } else {
+                widgetState.order.bigTop[widget.id] = index;
+            }
         });
         widgetConfig.small.forEach((widget, index) => {
             widgetState.order.small[widget.id] = index;
@@ -194,6 +214,17 @@ function initializeDashboard() {
         visible: widgetState.visible,
         sectionOrder: widgetState.sectionOrder
     });
+    
+    // Force fixed widgets to be visible before rendering
+    fixedTopWidgets.forEach(widgetId => {
+        widgetState.visible[widgetId] = true;
+    });
+    
+    // Force fixed widgets to be visible before rendering
+    fixedTopWidgets.forEach(widgetId => {
+        widgetState.visible[widgetId] = true;
+    });
+    saveState(); // Save the corrected state
     
     renderDashboardSections();
     renderCustomizeDropdown();
@@ -420,8 +451,18 @@ function renderSectionWidgets(sectionId) {
     newGrid.innerHTML = '';
     
     // Sort widgets by order
+    // Always include fixed widgets, filter others by visibility
     const sortedWidgets = [...sectionWidgets]
-        .filter(w => widgetState.visible[w.id] !== false)
+        .filter(w => {
+            // Always show fixed widgets
+            const isFixed = sectionId === 'bigTop' && fixedTopWidgets.includes(w.id);
+            if (isFixed) {
+                // Force visibility state for fixed widgets
+                widgetState.visible[w.id] = true;
+                return true;
+            }
+            return widgetState.visible[w.id] !== false;
+        })
         .sort((a, b) => {
             const order = widgetState.order[sectionId] || {};
             return (order[a.id] || 0) - (order[b.id] || 0);
@@ -484,11 +525,14 @@ function createWidgetElement(widget) {
     div.dataset.widgetSize = widget.size;
     div.draggable = false; // Widgets are not draggable on the dashboard, only in Customize menu
     
+    // Check if widget is fixed (Account Balance or My Tasks)
+    const isFixedWidget = fixedTopWidgets.includes(widget.id);
+    
     div.innerHTML = `
         <div class="widget-header">
             <h3>${widget.label}</h3>
             <div class="widget-header-actions">
-                <span class="widget-toggle" data-target="${widget.id}"><i class="ph ph-dots-three-vertical"></i></span>
+                ${!isFixedWidget ? `<span class="widget-toggle" data-target="${widget.id}"><i class="ph ph-dots-three-vertical"></i></span>` : ''}
             </div>
         </div>
         <div class="widget-content">
@@ -511,6 +555,11 @@ function createWidgetElement(widget) {
 function renderCustomizeDropdown() {
     const content = document.getElementById('customizeContent');
     content.innerHTML = '';
+    
+    // Track expanded state for "View all" buttons
+    if (!widgetState.viewAllExpanded) {
+        widgetState.viewAllExpanded = {};
+    }
     
     // Render sections in the order specified by sectionOrder
     widgetState.sectionOrder.forEach((sectionId, sectionIndex) => {
@@ -539,9 +588,25 @@ function renderCustomizeDropdown() {
             content.appendChild(item);
         });
         
-        // Add "Add Widget" button
-        const addWidgetBtn = createAddWidgetButton(sectionId, isLarge);
-        content.appendChild(addWidgetBtn);
+        // For middle and bottom sections, show available widgets directly
+        if (!isTopSection) {
+            const availableWidgetsList = getAvailableWidgetsForSection(sectionId, isLarge);
+            const isExpanded = widgetState.viewAllExpanded[sectionId] || false;
+            const widgetsToShow = isExpanded ? availableWidgetsList : availableWidgetsList.slice(0, 4);
+            const hasMore = availableWidgetsList.length > 4;
+            
+            // Render available widgets (toggled off by default)
+            widgetsToShow.forEach(widget => {
+                const item = createAvailableWidgetItem(widget, sectionId, isLarge);
+                content.appendChild(item);
+            });
+            
+            // Add "View all" button if there are more than 4 widgets
+            if (hasMore && !isExpanded) {
+                const viewAllBtn = createViewAllButton(sectionId);
+                content.appendChild(viewAllBtn);
+            }
+        }
     });
 }
 
@@ -892,15 +957,8 @@ function createAddWidgetButton(sectionId, isLarge) {
     return container;
 }
 
-// Show dropdown for adding widgets
-function showAddWidgetDropdown(button, sectionId, isLarge) {
-    // Remove existing dropdown if any
-    const existingDropdown = document.querySelector('.widget-selector-dropdown');
-    if (existingDropdown) {
-        existingDropdown.remove();
-    }
-    
-    // Get available widgets for this section
+// Get available widgets for a section (not currently in the section)
+function getAvailableWidgetsForSection(sectionId, isLarge) {
     const availablePool = isLarge ? availableWidgets.large : availableWidgets.small;
     const currentWidgets = (widgetConfig[sectionId] || []).map(w => w.id);
     
@@ -912,55 +970,66 @@ function showAddWidgetDropdown(button, sectionId, isLarge) {
         filteredWidgets = filteredWidgets.filter(w => !fixedTopWidgets.includes(w.id));
     }
     
-    // If top section, only allow adding non-fixed large widgets
-    if (sectionId === 'bigTop') {
-        filteredWidgets = filteredWidgets.filter(w => !fixedTopWidgets.includes(w.id));
-    }
+    return filteredWidgets;
+}
+
+// Create available widget item (toggled off by default)
+function createAvailableWidgetItem(widget, sectionId, isLarge) {
+    const div = document.createElement('div');
+    div.className = 'dropdown-item available-widget-item';
+    div.dataset.widgetId = widget.id;
+    div.dataset.widgetSection = sectionId;
     
-    if (filteredWidgets.length === 0) {
-        alert('No available widgets to add');
-        return;
-    }
+    // Available widgets are always toggled off initially
+    const isVisible = false;
     
-    // Create dropdown
-    const dropdown = document.createElement('div');
-    dropdown.className = 'widget-selector-dropdown';
-    dropdown.innerHTML = filteredWidgets.map(widget => `
-        <div class="widget-selector-item" data-widget-id="${widget.id}">
+    div.innerHTML = `
+        <div class="dropdown-item-content">
             <div class="dropdown-item-icon">${getWidgetIcon(widget.id)}</div>
-            <span>${widget.label}</span>
+            <span class="dropdown-item-label">${widget.label}</span>
         </div>
-    `).join('');
+        <div class="dropdown-item-actions">
+            <div class="toggle-switch ${isVisible ? 'active' : ''}" data-widget-id="${widget.id}" data-section-id="${sectionId}" data-is-large="${isLarge}"></div>
+        </div>
+    `;
     
-    // Position dropdown
-    const rect = button.getBoundingClientRect();
-    dropdown.style.position = 'fixed';
-    dropdown.style.top = `${rect.bottom + 5}px`;
-    dropdown.style.left = `${rect.left}px`;
-    dropdown.style.zIndex = '10000';
-    
-    document.body.appendChild(dropdown);
-    
-    // Add click handlers
-    dropdown.querySelectorAll('.widget-selector-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const widgetId = item.dataset.widgetId;
+    // Add toggle switch handler
+    const toggleSwitch = div.querySelector('.toggle-switch');
+    toggleSwitch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const widgetId = toggleSwitch.dataset.widgetId;
+        const isCurrentlyVisible = toggleSwitch.classList.contains('active');
+        
+        if (!isCurrentlyVisible) {
+            // Toggle on - add widget to section
             addWidgetToSection(widgetId, sectionId, isLarge);
-            dropdown.remove();
-        });
+            // Re-render dropdown to update the list
+            renderCustomizeDropdown();
+        }
     });
     
-    // Close dropdown when clicking outside
-    setTimeout(() => {
-        const closeHandler = (e) => {
-            if (!dropdown.contains(e.target) && !button.contains(e.target)) {
-                dropdown.remove();
-                document.removeEventListener('click', closeHandler);
-            }
-        };
-        document.addEventListener('click', closeHandler);
-    }, 0);
+    return div;
+}
+
+// Create "View all" button
+function createViewAllButton(sectionId) {
+    const container = document.createElement('div');
+    container.className = 'view-all-container';
+    
+    const button = document.createElement('button');
+    button.className = 'view-all-btn';
+    button.innerHTML = 'View all';
+    button.dataset.sectionId = sectionId;
+    button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Toggle expanded state
+        widgetState.viewAllExpanded[sectionId] = !widgetState.viewAllExpanded[sectionId];
+        saveState();
+        renderCustomizeDropdown();
+    });
+    
+    container.appendChild(button);
+    return container;
 }
 
 // Add widget to section
@@ -1184,6 +1253,11 @@ function handleSectionHeaderDragEnd(e) {
 
 // Toggle widget visibility
 function toggleWidgetVisibility(widgetId) {
+    // Prevent hiding fixed widgets (Account Balance and My Tasks)
+    if (fixedTopWidgets.includes(widgetId)) {
+        return; // Do nothing for fixed widgets
+    }
+    
     widgetState.visible[widgetId] = !widgetState.visible[widgetId];
     saveState();
     updateWidgetVisibility();
@@ -1208,7 +1282,11 @@ function updateWidgetVisibility() {
     [...widgetConfig.bigTop, ...widgetConfig.small, ...widgetConfig.bigBottom].forEach(widget => {
         const element = document.querySelector(`[data-widget-id="${widget.id}"]`);
         if (element) {
-            if (widgetState.visible[widget.id] === false) {
+            // Fixed widgets are always visible
+            if (fixedTopWidgets.includes(widget.id)) {
+                element.classList.remove('hidden');
+                widgetState.visible[widget.id] = true; // Force visibility
+            } else if (widgetState.visible[widget.id] === false) {
                 element.classList.add('hidden');
             } else {
                 element.classList.remove('hidden');

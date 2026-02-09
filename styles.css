@@ -331,6 +331,39 @@ body {
     background-color: #f9fafb;
 }
 
+/* Available Widget Item */
+.available-widget-item {
+    opacity: 0.7;
+}
+
+.available-widget-item .toggle-switch {
+    opacity: 0.5;
+}
+
+/* View All Button */
+.view-all-container {
+    padding: 8px 16px;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 4px;
+}
+
+.view-all-btn {
+    width: 100%;
+    padding: 8px;
+    background: none;
+    border: none;
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.view-all-btn:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
 .dropdown-divider {
     height: 1px;
     background-color: #e0e0e0;

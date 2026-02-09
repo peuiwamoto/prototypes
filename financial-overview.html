@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Overview Widget</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="fonts/Maison Neue/css/fonts.css">
+    <link rel="stylesheet" href="fonts/Pangea/css/fonts.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .financial-overview-widget {
+            background: white;
+            border: 1px solid rgba(17, 17, 17, 0.16);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 730px;
+            margin: 0 auto;
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .widget-title {
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.6;
+            letter-spacing: 0.15px;
+            color: rgba(0, 0, 0, 0.87);
+            margin: 0;
+        }
+
+        .widget-date {
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.43;
+            letter-spacing: 0.17px;
+            color: rgba(0, 0, 0, 0.87);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .widget-date.visible {
+            opacity: 1;
+        }
+
+        .summary-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 32px;
+        }
+
+        .total-available-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        .total-available-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .total-available-label {
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: 0.15px;
+            color: rgba(0, 0, 0, 0.87);
+            margin-bottom: 0;
+        }
+
+        .total-available-amount {
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 60px;
+            font-weight: 400;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            color: rgba(0, 0, 0, 0.87);
+            margin: 0;
+        }
+
+        .top-up-button {
+            border: 1px solid rgba(17, 17, 17, 0.16);
+            border-radius: 8px;
+            padding: 8px 22px;
+            background: white;
+            cursor: pointer;
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 26px;
+            letter-spacing: 0.46px;
+            color: #111;
+            transition: all 0.2s;
+        }
+
+        .top-up-button:hover {
+            background-color: #f9fafb;
+            border-color: rgba(17, 17, 17, 0.24);
+        }
+
+        .next-payment-info {
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.66;
+            letter-spacing: 0.4px;
+            color: rgba(0, 0, 0, 0.38);
+            margin-top: 8px;
+        }
+
+        .breakdown-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .breakdown-bar {
+            display: flex;
+            gap: 6px;
+            height: 4px;
+            width: 100%;
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .breakdown-segment {
+            height: 100%;
+            border-radius: 100px;
+        }
+
+        .credit-segment {
+            background-color: #3073e8;
+            flex: 1 0 0;
+        }
+
+        .prefund-segment {
+            background-color: #0d9488;
+            flex-shrink: 0;
+        }
+
+        .breakdown-labels {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .breakdown-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .breakdown-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .breakdown-indicator.credit {
+            background-color: #3073e8;
+        }
+
+        .breakdown-indicator.prefund {
+            background-color: #0d9488;
+        }
+
+        .breakdown-text {
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: 0.15px;
+            color: rgba(0, 0, 0, 0.87);
+        }
+
+        .chart-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .time-range-selector {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(17, 17, 17, 0.16);
+            border-radius: 8px;
+            padding: 6px 16px;
+            background: white;
+            cursor: pointer;
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.4px;
+            color: #111;
+            width: fit-content;
+        }
+
+        .time-range-selector:hover {
+            background-color: #f9fafb;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 186px;
+            width: 100%;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .x-axis-labels {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 0;
+            padding-right: 0;
+            margin-top: 0;
+        }
+
+        .x-axis-label {
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: 0.15px;
+            color: rgba(0, 0, 0, 0.38);
+            text-align: center;
+            max-width: 52px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .hover-guide {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            background-color: #0d9488;
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+            transform: translateX(-50%);
+        }
+
+        .hover-guide.active {
+            display: block;
+        }
+
+        .hover-tooltip {
+            position: absolute;
+            background: rgba(17, 17, 17, 0.08);
+            border-radius: 100px;
+            padding: 3px 6px;
+            font-family: 'Maison Neue', -apple-system, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 18px;
+            letter-spacing: 0.16px;
+            color: #000000;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 11;
+            display: none;
+            transform: translateX(-50%);
+        }
+
+        .hover-tooltip.active {
+            display: block;
+        }
+
+        .hover-cursor {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            pointer-events: none;
+            z-index: 12;
+            display: none;
+            transform: translate(-50%, -50%);
+        }
+
+        .hover-cursor.active {
+            display: block;
+        }
+
+        .hover-cursor svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="financial-overview-widget">
+        <div class="widget-header">
+            <h2 class="widget-title">Financial Overview</h2>
+            <span class="widget-date" id="widgetDate"></span>
+        </div>
+
+        <div class="summary-section">
+            <div class="total-available-row">
+                <div class="total-available-container">
+                    <div class="total-available-label">Total available</div>
+                    <p class="total-available-amount" id="totalAvailable">€200,000</p>
+                </div>
+                <button class="top-up-button">Top-up</button>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <button class="time-range-selector" id="timeRangeSelector">
+                Last 30 days
+                <i class="ph ph-caret-down"></i>
+            </button>
+
+            <div class="chart-container">
+                <div class="chart-wrapper">
+                    <canvas id="financialChart"></canvas>
+                    <div class="hover-guide" id="hoverGuide"></div>
+                    <div class="hover-tooltip" id="hoverTooltip"></div>
+                    <div class="hover-cursor" id="hoverCursor">
+                        <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="6" cy="6" r="5" fill="white" stroke="#0d9488" stroke-width="2"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="x-axis-labels" id="xAxisLabels">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="breakdown-section">
+            <div class="breakdown-bar" id="breakdownBar">
+                <div class="breakdown-segment credit-segment" id="creditSegment"></div>
+                <div class="breakdown-segment prefund-segment" id="prefundSegment"></div>
+            </div>
+            <div class="breakdown-labels">
+                <div class="breakdown-label">
+                    <div class="breakdown-indicator credit"></div>
+                    <span class="breakdown-text" id="creditLabel">Credit Limit €150,000 / Outstanding Balance €0</span>
+                </div>
+                <div class="breakdown-label">
+                    <div class="breakdown-indicator prefund"></div>
+                    <span class="breakdown-text" id="prefundLabel">Pre-fund + €50,000</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - represents balance over time
+        // Positive values = pre-funded cash, Negative values = credit usage
+        const sampleData = {
+            dates: ['2026-01-10', '2026-01-15', '2026-01-20', '2026-01-23', '2026-01-25', '2026-01-30'],
+            balances: [90000, 70000, 30000, -80000, 40000, 60000], // Mostly positive with one negative dip
+            creditLimit: 150000,
+            prefundAmounts: [90000, 70000, 30000, 0, 40000, 60000], // Pre-fund at each date
+            outstandingBalances: [0, 0, 0, 80000, 0, 0] // Outstanding balance at each date
+        };
+
+        // Current state (defaults to latest date)
+        let currentDateIndex = sampleData.dates.length - 1;
+        let isHovering = false;
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Update summary based on date index
+        function updateSummary(index, showDate = false) {
+            const balance = sampleData.balances[index];
+            const prefund = sampleData.prefundAmounts[index];
+            const outstanding = sampleData.outstandingBalances[index];
+            const creditLimit = sampleData.creditLimit;
+            
+            // Calculate total available
+            const totalAvailable = creditLimit - outstanding + prefund;
+            
+            // Update total available
+            document.getElementById('totalAvailable').textContent = formatCurrency(totalAvailable);
+            
+            // Update date (only show when hovering)
+            const dateElement = document.getElementById('widgetDate');
+            if (showDate) {
+                dateElement.textContent = formatDate(sampleData.dates[index]);
+                dateElement.classList.add('visible');
+            } else {
+                dateElement.textContent = '';
+                dateElement.classList.remove('visible');
+            }
+            
+            // Update breakdown bar
+            const creditSegment = document.getElementById('creditSegment');
+            const prefundSegment = document.getElementById('prefundSegment');
+            
+            // Calculate widths based on credit limit
+            // Full bar width = 100% of credit limit
+            // Pre-fund takes up space proportional to (prefund / creditLimit)
+            // Credit takes the remaining space
+            const prefundPercentage = Math.min((prefund / creditLimit) * 100, 100);
+            const creditPercentage = 100 - prefundPercentage;
+            
+            // Set flex values to control segment widths
+            creditSegment.style.flex = `${creditPercentage} 0 0`;
+            if (prefund > 0) {
+                prefundSegment.style.width = `${prefundPercentage}%`;
+                prefundSegment.style.display = 'block';
+            } else {
+                prefundSegment.style.display = 'none';
+            }
+            
+            // Update labels
+            document.getElementById('creditLabel').textContent = 
+                `Credit Limit ${formatCurrency(creditLimit)} / Outstanding Balance ${formatCurrency(outstanding)}`;
+            document.getElementById('prefundLabel').textContent = 
+                `Pre-fund + ${formatCurrency(prefund)}`;
+        }
+
+        // Initialize chart
+        const ctx = document.getElementById('financialChart').getContext('2d');
+        
+        // Create datasets for area fills above and below zero
+        const allBalances = sampleData.balances;
+        
+        // Create data points that transition smoothly
+        const chartLabels = sampleData.dates.map(d => {
+            const date = new Date(d);
+            return `Jan ${date.getDate()}`;
+        });
+        
+        // Populate X-axis labels (only show original labels, not intermediate ones)
+        const xAxisLabelsContainer = document.getElementById('xAxisLabels');
+        chartLabels.forEach(label => {
+            const labelEl = document.createElement('div');
+            labelEl.className = 'x-axis-label';
+            labelEl.textContent = label;
+            xAxisLabelsContainer.appendChild(labelEl);
+        });
+        
+        // Insert zero-crossing points into data so Chart.js can render smooth curves naturally
+        const expandedData = [];
+        const expandedLabels = [];
+        
+        for (let i = 0; i < allBalances.length; i++) {
+            expandedData.push(allBalances[i]);
+            expandedLabels.push(chartLabels[i]);
+            
+            // Check if next segment crosses zero
+            if (i < allBalances.length - 1) {
+                const current = allBalances[i];
+                const next = allBalances[i + 1];
+                const crossesZero = (current >= 0 && next < 0) || (current < 0 && next >= 0);
+                
+                if (crossesZero) {
+                    // Insert a zero point at the crossing
+                    expandedData.push(0);
+                    expandedLabels.push(''); // Empty label for intermediate point
+                }
+            }
+        }
+        
+        // Custom plugin to draw extended zero line
+        // Store hover coordinates globally
+        let hoverCoordinates = null;
+        
+        const extendedZeroLinePlugin = {
+            id: 'extendedZeroLine',
+            beforeDatasetsDraw: (chart) => {
+                const ctx = chart.ctx;
+                const yScale = chart.scales.y;
+                const zeroY = yScale.getPixelForValue(0);
+                
+                ctx.save();
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(0, zeroY);
+                ctx.lineTo(chart.width, zeroY);
+                ctx.stroke();
+                ctx.restore();
+            }
+        };
+        
+        // Plugin to track exact mouse position on the curve
+        const hoverTrackingPlugin = {
+            id: 'hoverTracking',
+            afterEvent: (chart, args) => {
+                if (args.event.type === 'mousemove') {
+                    const x = args.event.x;
+                    const chartArea = chart.chartArea;
+                    
+                    if (x < chartArea.left || x > chartArea.right) {
+                        hoverCoordinates = null;
+                        return;
+                    }
+                    
+                    // Get the dataset meta
+                    const meta = chart.getDatasetMeta(0);
+                    const dataset = chart.data.datasets[0];
+                    const yScale = chart.scales.y;
+                    
+                    // Find the segment that contains this X
+                    let point1 = null;
+                    let point2 = null;
+                    let index1 = -1;
+                    
+                    for (let i = 0; i < meta.data.length - 1; i++) {
+                        const p1 = meta.data[i];
+                        const p2 = meta.data[i + 1];
+                        if (x >= Math.min(p1.x, p2.x) && x <= Math.max(p1.x, p2.x)) {
+                            point1 = p1;
+                            point2 = p2;
+                            index1 = i;
+                            break;
+                        }
+                    }
+                    
+                    if (point1 && point2) {
+                        // Calculate Y on the bezier curve at this X
+                        // Chart.js uses cubic bezier with tension 0.4
+                        const t = (x - point1.x) / (point2.x - point1.x);
+                        const tension = 0.4;
+                        
+                        // Control points for bezier curve
+                        const dx = point2.x - point1.x;
+                        const dy = point2.y - point1.y;
+                        const cp1x = point1.x + dx * tension;
+                        const cp1y = point1.y + dy * tension;
+                        const cp2x = point2.x - dx * tension;
+                        const cp2y = point2.y - dy * tension;
+                        
+                        // Calculate Y on bezier curve at t
+                        const mt = 1 - t;
+                        const y = mt * mt * mt * point1.y +
+                                  3 * mt * mt * t * cp1y +
+                                  3 * mt * t * t * cp2y +
+                                  t * t * t * point2.y;
+                        
+                        hoverCoordinates = {
+                            x: x,
+                            y: y,
+                            index: index1
+                        };
+                    } else {
+                        hoverCoordinates = null;
+                    }
+                } else if (args.event.type === 'mouseout') {
+                    hoverCoordinates = null;
+                }
+            }
+        };
+        
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: expandedLabels,
+                datasets: [
+                    {
+                        label: 'Balance',
+                        data: expandedData,
+                        segment: {
+                            borderColor: ctx => {
+                                // Color based on the segment position relative to zero
+                                // Use the average of both points to determine color
+                                const y0 = ctx.p0.parsed.y;
+                                const y1 = ctx.p1.parsed.y;
+                                const avgY = (y0 + y1) / 2;
+                                return avgY >= 0 ? '#0d9488' : '#3073e8';
+                            }
+                        },
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.4, // Smooth curves
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        borderWidth: 2,
+                        spanGaps: false
+                    }
+                ]
+            },
+            plugins: [extendedZeroLinePlugin],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 10,
+                        bottom: 10
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        min: -200000,
+                        max: 200000,
+                        position: 'right',
+                        offset: false,
+                        ticks: {
+                            stepSize: 100000,
+                            display: false, // Hide default ticks, we use custom Y-axis labels
+                            callback: function(value) {
+                                if (value === 0) return '0k';
+                                return (value / 1000) + 'k';
+                            }
+                        },
+                        grid: {
+                            display: false, // Hide default grid, we draw custom zero line
+                            drawBorder: false,
+                            drawOnChartArea: false,
+                            offset: false
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
+                    x: {
+                        offset: false,
+                        ticks: {
+                            display: false, // Hide default ticks, we use custom X-axis labels
+                            font: {
+                                family: "'Maison Neue', -apple-system, sans-serif",
+                                size: 12,
+                                weight: 400
+                            },
+                            color: 'rgba(0, 0, 0, 0.38)',
+                            padding: 8
+                        },
+                        grid: {
+                            display: false,
+                            drawBorder: false,
+                            offset: false
+                        },
+                        border: {
+                            display: false
+                        }
+                    }
+                },
+                onHover: (event, activeElements) => {
+                    const canvas = event.native.target;
+                    const rect = canvas.getBoundingClientRect();
+                    const x = event.native.offsetX;
+                    const chartArea = chart.chartArea;
+                    
+                    if (x < chartArea.left || x > chartArea.right) {
+                        handleChartLeave();
+                        return;
+                    }
+                    
+                    // Calculate exact coordinates on the curve (like Figma Make does)
+                    const meta = chart.getDatasetMeta(0);
+                    const dataset = chart.data.datasets[0];
+                    
+                    // Find the segment that contains this X
+                    let point1 = null;
+                    let point2 = null;
+                    let index1 = -1;
+                    
+                    for (let i = 0; i < meta.data.length - 1; i++) {
+                        const p1 = meta.data[i];
+                        const p2 = meta.data[i + 1];
+                        if (x >= Math.min(p1.x, p2.x) && x <= Math.max(p1.x, p2.x)) {
+                            point1 = p1;
+                            point2 = p2;
+                            index1 = i;
+                            break;
+                        }
+                    }
+                    
+                    if (!point1 || !point2) {
+                        handleChartLeave();
+                        return;
+                    }
+                    
+                    // Calculate Y on the bezier curve at this X (exactly like Figma Make)
+                    const t = (x - point1.x) / (point2.x - point1.x);
+                    const tension = 0.4;
+                    
+                    // Control points for bezier curve
+                    const dx = point2.x - point1.x;
+                    const dy = point2.y - point1.y;
+                    const cp1x = point1.x + dx * tension;
+                    const cp1y = point1.y + dy * tension;
+                    const cp2x = point2.x - dx * tension;
+                    const cp2y = point2.y - dy * tension;
+                    
+                    // Calculate Y on bezier curve at t
+                    const mt = 1 - t;
+                    const actualY = mt * mt * mt * point1.y +
+                                  3 * mt * mt * t * cp1y +
+                                  3 * mt * t * t * cp2y +
+                                  t * t * t * point2.y;
+                    
+                    // Find closest original data point index for summary updates
+                    const dataPoints = sampleData.dates.length;
+                    const segmentWidth = (chartArea.right - chartArea.left) / (dataPoints - 1);
+                    
+                    let closestIndex = 0;
+                    let minDistance = Infinity;
+                    
+                    for (let i = 0; i < dataPoints; i++) {
+                        const pointX = chartArea.left + (i * segmentWidth);
+                        const distance = Math.abs(x - pointX);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestIndex = i;
+                        }
+                    }
+                    
+                    // Store coordinates and call handler
+                    hoverCoordinates = { x: x, y: actualY, index: index1 };
+                    handleChartHover(x, closestIndex, rect);
+                },
+            }
+        });
+
+        // Handle chart hover
+        function handleChartHover(x, index, rect) {
+            if (!hoverCoordinates) {
+                return;
+            }
+            
+            isHovering = true;
+            currentDateIndex = index;
+            
+            const hoverGuide = document.getElementById('hoverGuide');
+            const hoverTooltip = document.getElementById('hoverTooltip');
+            const hoverCursor = document.getElementById('hoverCursor');
+            
+            // Use exact coordinates from the hover tracking plugin
+            // This matches how Figma Make does it - using exact coordinates on the curve
+            const actualX = hoverCoordinates.x;
+            const actualY = hoverCoordinates.y;
+            
+            // Get the balance value by interpolating between the two points
+            const chartArea = chart.chartArea;
+            const meta = chart.getDatasetMeta(0);
+            const dataset = chart.data.datasets[0];
+            const yScale = chart.scales.y;
+            
+            // Find the segment and interpolate the value
+            let pointBalance = 0;
+            if (hoverCoordinates.index >= 0 && hoverCoordinates.index < dataset.data.length - 1) {
+                const value1 = dataset.data[hoverCoordinates.index];
+                const value2 = dataset.data[hoverCoordinates.index + 1];
+                const point1 = meta.data[hoverCoordinates.index];
+                const point2 = meta.data[hoverCoordinates.index + 1];
+                const t = (actualX - point1.x) / (point2.x - point1.x);
+                pointBalance = value1 + (value2 - value1) * t;
+            } else {
+                pointBalance = dataset.data[hoverCoordinates.index] || 0;
+            }
+            
+            // Calculate height from bottom of chart area to circle position
+            const lineHeight = chartArea.bottom - actualY;
+            
+            // Show hover guide from bottom up to the circle (exactly like Figma Make)
+            hoverGuide.style.left = actualX + 'px';
+            hoverGuide.style.height = lineHeight + 'px';
+            hoverGuide.classList.add('active');
+            
+            // Show tooltip with the interpolated balance value
+            const tooltipValue = Math.abs(pointBalance);
+            const tooltipText = pointBalance >= 0 ? `${(tooltipValue / 1000).toFixed(0)}k` : `-${(tooltipValue / 1000).toFixed(0)}k`;
+            hoverTooltip.textContent = tooltipText;
+            
+            // Position tooltip above the circle (exactly like Figma Make)
+            hoverTooltip.style.left = actualX + 'px';
+            hoverTooltip.style.top = (actualY - 40) + 'px';
+            hoverTooltip.classList.add('active');
+            
+            // Show cursor at the exact position on the line (exactly like Figma Make)
+            hoverCursor.style.left = actualX + 'px';
+            hoverCursor.style.top = actualY + 'px';
+            hoverCursor.classList.add('active');
+            
+            // Update summary - find the closest original data point index
+            const balance = sampleData.balances[index];
+            updateSummary(index, true);
+        }
+
+        // Handle chart leave
+        function handleChartLeave() {
+            if (!isHovering) return;
+            
+            isHovering = false;
+            document.getElementById('hoverGuide').classList.remove('active');
+            document.getElementById('hoverTooltip').classList.remove('active');
+            document.getElementById('hoverCursor').classList.remove('active');
+            
+            // Reset to latest date without showing date
+            currentDateIndex = sampleData.dates.length - 1;
+            updateSummary(currentDateIndex, false);
+        }
+
+        // Initialize
+        updateSummary(currentDateIndex);
+        
+        // Add mouse leave handler for the chart
+        const chartCanvas = document.getElementById('financialChart');
+        chartCanvas.addEventListener('mouseleave', handleChartLeave);
+
+        // Time range selector (placeholder)
+        document.getElementById('timeRangeSelector').addEventListener('click', function() {
+            // TODO: Implement time range selection
+            alert('Time range selection coming soon');
+        });
+    </script>
+</body>
+</html>

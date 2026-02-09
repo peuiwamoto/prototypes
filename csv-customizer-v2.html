@@ -155,11 +155,19 @@
 
                         <!-- Empty State (shown when no configuration) -->
                         <div id="emptyState" class="empty-state">
-                            <button class="btn-primary btn-large" id="createConfigBtn">
-                                <i class="ph ph-plus"></i>
-                                Create New Export Configuration
-                            </button>
+                            <div class="empty-state-options">
+                                <button class="btn-primary btn-large" id="createConfigBtn">
+                                    <i class="ph ph-plus"></i>
+                                    Create New Export Configuration
+                                </button>
+                                <p class="empty-state-divider">or</p>
+                                <button class="btn-secondary btn-large" id="uploadSampleCsvBtn">
+                                    <i class="ph ph-upload-simple"></i>
+                                    Upload sample CSV
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -218,8 +226,18 @@
                             <thead>
                                 <tr>
                                     <th class="col-order">Order</th>
-                                    <th class="col-header">Column Header</th>
-                                    <th class="col-field">Data Field</th>
+                                    <th class="col-header">
+                                        <span class="table-header-label">Column Header</span>
+                                        <span class="table-header-tooltip-trigger" data-tooltip="This is the column name as it will appear in the exported CSV. Use this to match the naming expected by your accounting system." title="This is the column name as it will appear in the exported CSV. Use this to match the naming expected by your accounting system." aria-label="Help">
+                                            <i class="ph ph-info"></i>
+                                        </span>
+                                    </th>
+                                    <th class="col-field">
+                                        <span class="table-header-label">Data Field</span>
+                                        <span class="table-header-tooltip-trigger" data-tooltip="This defines which internal system data is mapped to this column (e.g. transaction date, merchant, amount)." title="This defines which internal system data is mapped to this column (e.g. transaction date, merchant, amount)." aria-label="Help">
+                                            <i class="ph ph-info"></i>
+                                        </span>
+                                    </th>
                                     <th class="col-sample">Sample Value</th>
                                     <th class="col-format">Formatting</th>
                                     <th class="col-rows" id="colRowsHeader" style="display: none;">Row Config</th>
@@ -349,6 +367,46 @@
                     <input type="checkbox" id="splitIntoRows" class="popover-checkbox" />
                     <span>Split into 2 rows</span>
                 </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload sample CSV modal (Figma: 2517-4025, 2517-4118, 2517-4178) -->
+    <div class="modal-overlay" id="uploadSampleCsvModal" style="display: none;">
+        <div class="modal modal-upload-csv">
+            <div class="modal-header">
+                <h3 class="modal-title">Upload sample CSV</h3>
+                <button type="button" class="modal-close" id="closeUploadSampleCsvModal" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- State 1: Drop zone -->
+                <div id="uploadCsvDropZone" class="upload-csv-dropzone">
+                    <i class="ph ph-upload-simple upload-csv-dropzone-icon"></i>
+                    <p class="upload-csv-dropzone-text">Drag and drop or <button type="button" class="upload-csv-select-link" id="uploadCsvSelectFile">select file</button></p>
+                    <p class="upload-csv-dropzone-hint">CSV · Max 10 MB</p>
+                </div>
+                <!-- State 2 & 3: File + progress or file + size -->
+                <div id="uploadCsvFileArea" class="upload-csv-file-area" style="display: none;">
+                    <div class="upload-csv-file-row">
+                        <i class="ph ph-file-csv upload-csv-file-icon"></i>
+                        <div class="upload-csv-file-info">
+                            <span class="upload-csv-file-name" id="uploadCsvFileName">sample.csv</span>
+                            <span class="upload-csv-file-size" id="uploadCsvFileSize" style="display: none;">1.14 MB</span>
+                            <div id="uploadCsvProgressWrap" class="upload-csv-progress-wrap" style="display: none;">
+                                <div class="upload-csv-progress-bar">
+                                    <div class="upload-csv-progress-fill" id="uploadCsvProgressFill"></div>
+                                </div>
+                                <span class="upload-csv-progress-pct" id="uploadCsvProgressPct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-text" id="uploadCsvCancelBtn">Cancel</button>
+                <button type="button" class="btn-primary" id="uploadCsvExtractBtn" disabled>Extract CSV columns</button>
             </div>
         </div>
     </div>

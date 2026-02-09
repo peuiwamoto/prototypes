@@ -996,10 +996,177 @@ body {
     padding: 48px 24px;
 }
 
+.empty-state-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.empty-state-divider {
+    font-size: 14px;
+    color: #999999;
+    margin: 0;
+}
+
 .btn-large {
     padding: 16px 32px;
     font-size: 16px;
     font-weight: 600;
+}
+
+/* Upload sample CSV modal (Figma: dialog + progress bar + extract button) */
+.modal-upload-csv {
+    width: 100%;
+    max-width: 480px;
+}
+
+.modal-upload-csv .modal-body {
+    padding: 0 24px 24px;
+}
+
+.upload-csv-dropzone {
+    border: 1px dashed #c0c0c0;
+    border-radius: 8px;
+    background: #f9fafb;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.upload-csv-dropzone:hover {
+    border-color: #2563eb;
+    background: #f0f7ff;
+}
+
+.upload-csv-dropzone-icon {
+    font-size: 40px;
+    color: #999999;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.upload-csv-dropzone-text {
+    font-size: 14px;
+    color: #333333;
+    margin: 0 0 8px;
+}
+
+.upload-csv-select-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: #2563eb;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.upload-csv-select-link:hover {
+    color: #1d4ed8;
+}
+
+.upload-csv-dropzone-hint {
+    font-size: 12px;
+    color: #999999;
+    margin: 0;
+}
+
+.upload-csv-file-area {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #f9fafb;
+    padding: 16px;
+}
+
+.upload-csv-file-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.upload-csv-file-icon {
+    font-size: 24px;
+    color: #666666;
+    flex-shrink: 0;
+}
+
+.upload-csv-file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.upload-csv-file-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111111;
+}
+
+.upload-csv-file-size {
+    font-size: 12px;
+    color: #666666;
+    margin-top: 4px;
+}
+
+.upload-csv-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.upload-csv-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.upload-csv-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #111111;
+    border-radius: 3px;
+    transition: width 0.15s ease-out;
+}
+
+.upload-csv-progress-pct {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333333;
+    min-width: 32px;
+}
+
+.modal-upload-csv .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111111;
+    cursor: pointer;
+}
+
+.btn-text:hover {
+    color: #2563eb;
+}
+
+.modal-upload-csv .btn-primary:disabled {
+    background: #e0e0e0;
+    color: #999999;
+    cursor: not-allowed;
 }
 
 /* Row Configuration */
@@ -1024,7 +1191,7 @@ body {
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -1032,10 +1199,12 @@ body {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    overflow: visible;
 }
 
 .config-table thead {
     background-color: #f9fafb;
+    overflow: visible;
 }
 
 .config-table th {
@@ -1043,6 +1212,7 @@ body {
     text-align: left;
     font-weight: 600;
     color: #111111;
+    overflow: visible;
     border-bottom: 2px solid #e0e0e0;
     white-space: nowrap;
 }
@@ -1167,8 +1337,86 @@ body {
     width: 80px;
 }
 
+/* Table header labels with inline tooltips */
+.table-header-label {
+    margin-right: 6px;
+}
+
+.table-header-tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: #666666;
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+}
+
+.table-header-tooltip-trigger:hover {
+    color: #2563eb;
+}
+
+.table-header-tooltip-trigger i {
+    font-size: 14px;
+}
+
+/* Tooltip appears below icon so it isn't clipped by container overflow */
+.table-header-tooltip-trigger::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+    background: #111111;
+    color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    z-index: 9999;
+    text-align: left;
+    white-space: normal;
+}
+
+.table-header-tooltip-trigger::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: #111111;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.table-header-tooltip-trigger:hover::after,
+.table-header-tooltip-trigger:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
 .col-header {
     width: 200px;
+}
+
+.col-header .table-header-label,
+.col-header .table-header-tooltip-trigger,
+.col-field .table-header-label,
+.col-field .table-header-tooltip-trigger {
+    white-space: normal;
 }
 
 .col-field {

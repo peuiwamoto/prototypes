@@ -42,6 +42,15 @@ class CSVCustomizerV2 {
             });
         }
 
+        const uploadSampleCsvBtn = document.getElementById('uploadSampleCsvBtn');
+        if (uploadSampleCsvBtn) {
+            uploadSampleCsvBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openUploadSampleCsvModal();
+            });
+        }
+        this.setupUploadSampleCsvModalListeners();
+
         const editConfigBtn = document.getElementById('editConfigBtn');
         if (editConfigBtn) {
             editConfigBtn.addEventListener('click', (e) => {
@@ -1518,6 +1527,142 @@ class CSVCustomizerV2 {
         `;
         
         this.showStep(0);
+    }
+
+    /** Mock: build column config from extracted CSV headers (headers only, no real file). */
+    createColumnsFromHeaders(headers) {
+        const baseColumn = (order) => ({
+            id: 'col' + Date.now() + '_' + order + '_' + Math.random().toString(36).slice(2, 9),
+            order: 0,
+            header: 'New Column',
+            dataField: 'transaction_date',
+            formatting: 'text',
+            visible: true,
+            splitEnabled: false,
+            debitValue: '',
+            creditValue: '',
+            isAmountField: false,
+            isConstant: false,
+            constantValue: '',
+            splitIntoColumns: false,
+            splitIntoRows: false,
+            row1Mode: 'same',
+            row1Value: '',
+            row2Mode: 'same',
+            row2Value: '',
+            creditRow1Mode: 'amount',
+            creditRow1Value: '',
+            creditRow2Mode: 'blank',
+            creditRow2Value: '',
+            debitRow1Mode: 'blank',
+            debitRow1Value: '',
+            debitRow2Mode: 'amount',
+            debitRow2Value: '',
+            dateFormat: 'YYYY-MM-DD',
+            amountSign: 'as-is',
+            decimalSeparator: 'dot',
+            thousandSeparator: 'comma',
+            showCurrency: false,
+            currencySymbol: 'EUR',
+            caseFormat: 'original',
+            maxLength: null
+        });
+        return headers.map((header, index) => {
+            const col = baseColumn(index);
+            col.order = index;
+            col.header = header;
+            return col;
+        });
+    }
+
+    openUploadSampleCsvModal() {
+        const modal = document.getElementById('uploadSampleCsvModal');
+        if (!modal) return;
+        this.resetUploadSampleCsvModal();
+        modal.style.display = 'flex';
+    }
+
+    closeUploadSampleCsvModal() {
+        const modal = document.getElementById('uploadSampleCsvModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    resetUploadSampleCsvModal() {
+        document.getElementById('uploadCsvDropZone').style.display = 'block';
+        const fileArea = document.getElementById('uploadCsvFileArea');
+        fileArea.style.display = 'none';
+        document.getElementById('uploadCsvProgressWrap').style.display = 'none';
+        document.getElementById('uploadCsvFileSize').style.display = 'none';
+        document.getElementById('uploadCsvProgressFill').style.width = '0%';
+        document.getElementById('uploadCsvProgressPct').textContent = '0%';
+        document.getElementById('uploadCsvExtractBtn').disabled = true;
+    }
+
+    setupUploadSampleCsvModalListeners() {
+        const modal = document.getElementById('uploadSampleCsvModal');
+        const closeBtn = document.getElementById('closeUploadSampleCsvModal');
+        const cancelBtn = document.getElementById('uploadCsvCancelBtn');
+        const dropZone = document.getElementById('uploadCsvDropZone');
+        const selectFileBtn = document.getElementById('uploadCsvSelectFile');
+        const extractBtn = document.getElementById('uploadCsvExtractBtn');
+
+        const closeModal = () => this.closeUploadSampleCsvModal();
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        if (modal) {
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        }
+
+        const startMockUpload = () => {
+            dropZone.style.display = 'none';
+            const fileArea = document.getElementById('uploadCsvFileArea');
+            const progressWrap = document.getElementById('uploadCsvProgressWrap');
+            const progressFill = document.getElementById('uploadCsvProgressFill');
+            const progressPct = document.getElementById('uploadCsvProgressPct');
+            const fileName = document.getElementById('uploadCsvFileName');
+            const fileSize = document.getElementById('uploadCsvFileSize');
+            const extractBtnEl = document.getElementById('uploadCsvExtractBtn');
+
+            fileName.textContent = 'sample.csv';
+            fileArea.style.display = 'block';
+            progressWrap.style.display = 'block';
+            fileSize.style.display = 'none';
+            extractBtnEl.disabled = true;
+
+            let pct = 0;
+            const interval = setInterval(() => {
+                pct += 4;
+                if (pct >= 100) {
+                    pct = 100;
+                    clearInterval(interval);
+                    progressWrap.style.display = 'none';
+                    fileSize.style.display = 'block';
+                    fileSize.textContent = '1.14 MB';
+                    extractBtnEl.disabled = false;
+                    return;
+                }
+                progressFill.style.width = pct + '%';
+                progressPct.textContent = pct + '%';
+            }, 60);
+        };
+
+        if (dropZone) dropZone.addEventListener('click', (e) => { e.preventDefault(); startMockUpload(); });
+        if (selectFileBtn) selectFileBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); startMockUpload(); });
+        if (extractBtn) {
+            extractBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const mockHeaders = ['Date', 'Account', 'Description', 'Debit', 'Credit'];
+                this.configuration.columns = this.createColumnsFromHeaders(mockHeaders);
+                this.savedConfiguration = JSON.parse(JSON.stringify(this.configuration));
+                this.renderConfigurationTable();
+                this.updateLastUpdatedDisplay();
+                this.updateSaveButtonState();
+                this.updateRowsColumnVisibility();
+                this.closeUploadSampleCsvModal();
+                this.showStep(1);
+            });
+        }
     }
 
     saveConfiguration() {
