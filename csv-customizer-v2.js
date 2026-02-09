@@ -59,6 +59,19 @@ class CSVCustomizerV2 {
             });
         }
 
+        const deleteConfigBtn = document.getElementById('deleteConfigBtn');
+        if (deleteConfigBtn) {
+            deleteConfigBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('Delete this export configuration? You will return to the initial setup options.')) {
+                    localStorage.removeItem('csvConfiguration');
+                    this.loadDefaultColumns();
+                    this.savedConfiguration = JSON.parse(JSON.stringify(this.configuration));
+                    this.showLandingEmpty();
+                }
+            });
+        }
+
         // Config screen back button
         const configBackBtn = document.getElementById('configBackBtn');
         if (configBackBtn) {

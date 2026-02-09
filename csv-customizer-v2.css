@@ -948,6 +948,12 @@ body {
     flex: 1;
 }
 
+.config-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .config-card-title {
     font-size: 20px;
     font-weight: 600;
